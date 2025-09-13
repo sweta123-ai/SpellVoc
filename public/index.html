@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SpellVoc - Education Platform</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <h2>SpellVoc</h2>
+            </div>
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="#home" class="nav-link">Home</a>
+                </li>
+                <li class="nav-item">
+                    <a href="#about" class="nav-link">About</a>
+                </li>
+                <li class="nav-item">
+                    <a href="#course" class="nav-link">Course</a>
+                </li>
+                <li class="nav-item">
+                    <a href="#price" class="nav-link">Pricing</a>
+                </li>
+                <li class="nav-item">
+                    <a href="#testimonial" class="nav-link">Testimonial</a>
+                </li>
+                <li class="nav-item">
+                    <a href="#contact" class="nav-link">Contact Us</a>
+                </li>
+            </ul>
+            <div class="nav-auth">
+                <button class="user-icon" id="userIcon">
+                    <i class="fas fa-user"></i>
+                </button>
+            </div>
+            <div class="hamburger">
+                <span class="bar"></span>
+                <span class="bar"></span>
+                <span class="bar"></span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Authentication Slide -->
+    <div class="auth-slide" id="authSlide">
+        <div class="auth-container">
+            <div class="auth-header">
+                <h2>Authentication</h2>
+            </div>
+            <div class="auth-tabs">
+                <button class="auth-tab active" data-form="login">Login</button>
+                <button class="auth-tab" data-form="register">Register</button>
+            </div>
+
+            <!-- Login Form -->
+            <form class="auth-form active" id="loginForm">
+                <div class="form-group">
+                    <label for="loginUserId">User ID</label>
+                    <input type="text" id="loginUserId" name="userId" required>
+                </div>
+                <div class="form-group">
+                    <label for="loginPassword">Password</label>
+                    <div class="password-field">
+                        <input type="password" id="loginPassword" name="password" required>
+                        <button type="button" class="password-toggle" data-target="loginPassword">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <a href="#" class="forgot-password">Forgot Password?</a>
+                </div>
+                <button type="submit" class="auth-submit">Login</button>
+            </form>
+
+            <!-- Register Form -->
+            <form class="auth-form" id="registerForm">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="registerName">Full Name</label>
+                        <input type="text" id="registerName" name="fullName" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="registerPhone">Phone Number</label>
+                        <input type="tel" id="registerPhone" name="phone" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="registerEmail">Email</label>
+                    <input type="email" id="registerEmail" name="email" required>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="registerMode">Mode of Learning</label>
+                        <select id="registerMode" name="mode" required>
+                            <option value="">Select Mode</option>
+                            <option value="online">Online</option>
+                            <option value="offline">Offline</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="registerCategory">Category</label>
+                        <select id="registerCategory" name="category" required>
+                            <option value="">Select Category</option>
+                            <option value="professional">Professional</option>
+                            <option value="job-aspirants">Job Aspirants</option>
+                            <option value="students">Students</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="registerPassword">Create Password</label>
+                    <div class="password-field">
+                        <input type="password" id="registerPassword" name="password" required>
+                        <button type="button" class="password-toggle" data-target="registerPassword">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="confirmPassword">Confirm Password</label>
+                    <div class="password-field">
+                        <input type="password" id="confirmPassword" name="confirmPassword" required>
+                        <button type="button" class="password-toggle" data-target="confirmPassword">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="registerMessage">Message (Optional)</label>
+                    <textarea id="registerMessage" name="message" rows="3"
+                        placeholder="Tell us about your learning goals..."></textarea>
+                </div>
+                <button type="submit" class="auth-submit">Register</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <section id="home" class="hero-section">
+            <div id="particles-js"></div>
+            <div class="hero-content">
+                <h1>Welcome to SpellVoc</h1>
+                <p>Your gateway to quality education and learning</p>
+                <button class="cta-button">Explore Courses</button>
+                <div class="stats-row">
+                    <div class="stat-item"><span class="stat-value">2000+</span><span class="stat-label">Happy Students</span></div>
+                    <div class="stat-item"><span class="stat-value">8+</span><span class="stat-label">Years of Experience</span></div>
+                    <div class="stat-item"><span class="stat-value">500+</span><span class="stat-label">Daily Active</span></div>
+                </div>
+            </div>
+        </section>
+
+        <section id="about" class="about-section">
+            <div class="container">
+                <div class="about-grid">
+                    <div class="about-left">
+                        <img src="mentor.jpg" alt="Rajlaxmi - Vocabulary Mentor" class="mentor-photo">
+                        <div class="mentor-caption">
+                            <div class="mentor-name">Rajlaxmi</div>
+                            <div class="mentor-role">Vocabulary Mentor</div>
+                        </div>
+                    </div>
+                    <div class="about-right">
+                        <h2 class="about-title">Why choose us?</h2>
+                        <p class="about-text">
+                            At SpellVoc, we focus on practical, confidence‑building English that you can use every day. Our sessions blend vocabulary, grammar, and speaking practice into a clear path tailored to your level. With friendly mentorship, engaging activities, and real feedback, you’ll see steady progress—from your first conversation to your next big opportunity.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="course" class="course-section">
+            <div class="container">
+                <h2>Our Courses</h2>
+                <div class="course-cards">
+                    <div class="course-card">
+                        <div class="course-image">
+                            <img src="https://images.unsplash.com/photo-1552664730-d307ca884978?w=400&h=250&fit=crop" alt="Business English Course">
+                        </div>
+                        <div class="course-content">
+                            <h3>Business English Course</h3>
+                            <p class="course-caption">Master professional communication skills for the corporate world. Learn business vocabulary, email writing, and presentation techniques.</p>
+                            <button class="join-btn">Join Course</button>
+                        </div>
+                    </div>
+                    
+                    <div class="course-card">
+                        <div class="course-image">
+                            <img src="https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=400&h=250&fit=crop" alt="Advanced Vocab Class">
+                        </div>
+                        <div class="course-content">
+                            <h3>Advanced Vocab Class</h3>
+                            <p class="course-caption">Expand your vocabulary with advanced words and phrases. Perfect for students aiming to enhance their language proficiency.</p>
+                            <button class="join-btn">Join Course</button>
+                        </div>
+                    </div>
+                    
+                    <div class="course-card">
+                        <div class="course-image">
+                            <img src="https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=400&h=250&fit=crop" alt="Grammar Workshop Alert">
+                        </div>
+                        <div class="course-content">
+                            <h3>Grammar Workshop Alert</h3>
+                            <p class="course-caption">Perfect your grammar skills with interactive workshops. Learn sentence structure, tenses, and common grammar rules.</p>
+                            <button class="join-btn">Join Course</button>
+                        </div>
+                    </div>
+                    
+                    <div class="course-card">
+                        <div class="course-image">
+                            <img src="https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=400&h=250&fit=crop" alt="Communication Skills Boost">
+                        </div>
+                        <div class="course-content">
+                            <h3>Communication Skills Boost</h3>
+                            <p class="course-caption">Improve your speaking and listening skills. Practice real conversations and build confidence in English communication.</p>
+                            <button class="join-btn">Join Course</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="price" class="price-section">
+            <div class="container">
+                <h2>Pricing Options</h2>
+                <div class="pricing-cards">
+                    <div class="pricing-card">
+                        <div class="card-header">
+                            <h3>Beginner</h3>
+                            <p class="price">199/month</p>
+                        </div>
+                        <div class="card-body">
+                            <p class="description">Basic vocabulary building.</p>
+                            <button class="signup-btn">Buy Now</button>
+                        </div>
+                    </div>
+                    
+                    <div class="pricing-card">
+                        <div class="card-header">
+                            <h3>Standard</h3>
+                            <p class="price">299/month</p>
+                        </div>
+                        <div class="card-body">
+                            <p class="description">Intermediate communication skills.</p>
+                            <button class="signup-btn">Buy Now</button>
+                        </div>
+                    </div>
+                    
+                    <div class="pricing-card">
+                        <div class="card-header">
+                            <h3>Premium</h3>
+                            <p class="price">499/month</p>
+                        </div>
+                        <div class="card-body">
+                            <p class="description">Advanced vocabulary mastery.</p>
+                            <button class="signup-btn">Buy Now</button>
+                        </div>
+                    </div>
+                    
+                    <div class="pricing-card">
+                        <div class="card-header">
+                            <h3>Master</h3>
+                            <p class="price">599/month</p>
+                        </div>
+                        <div class="card-body">
+                            <p class="description">Elite communication proficiency.</p>
+                            <button class="signup-btn">Buy Now</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="testimonial" class="testimonial-section">
+            <div class="container">
+                <h2>Testimonials</h2>
+                <div class="pricing-cards testimonial-videos">
+                    <div class="pricing-card">
+                        <div class="card-body">
+                            <video class="testimonial-video" width="100%" preload="metadata" controls playsinline>
+                                <source src="review 1.mp4" type="video/mp4">
+                                Your browser does not support the video tag.
+                            </video>
+                        </div>
+                    </div>
+                    
+                    <div class="pricing-card">
+                        <div class="card-body">
+                            <video class="testimonial-video" width="100%" preload="metadata" controls playsinline>
+                                <source src="review 2.mp4" type="video/mp4">
+                                Your browser does not support the video tag.
+                            </video>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="contact" class="contact-section">
+            <div class="container">
+                <h2>Contact Us</h2>
+                <p class="contact-caption">
+                    Get in touch with us for any questions, support, or to start your learning journey. We're here to
+                    help you succeed!
+                </p>
+                <button class="get-touch-btn" id="getTouchBtn">Get In Touch</button>
+
+                <!-- Contact Form (hidden initially) -->
+                <div class="contact-form-wrapper" id="contactFormWrapper">
+                    <div class="contact-form">
+                        <form id="contactForm">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="contactName">Name</label>
+                                    <input type="text" id="contactName" name="name" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="contactEmail">Email</label>
+                                    <input type="email" id="contactEmail" name="email" required>
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="contactPhone">Phone Number</label>
+                                    <input type="tel" id="contactPhone" name="phone" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="contactSubject">Subject</label>
+                                    <input type="text" id="contactSubject" name="subject" required>
+                                </div>
+                            </div>
+                            <div class="form-group full-width">
+                                <label for="contactMessage">Message</label>
+                                <textarea id="contactMessage" name="message" rows="4" required></textarea>
+                            </div>
+                            <div class="form-submit">
+                                <button type="submit" class="contact-submit">Submit</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Contact info left & links right -->
+                <div class="contact-sides">
+                    <div class="contact-info">
+                        <h4>📞+91- 9556139795</h4>
+                        <h4>✉️ spellvoc1997@gmail.com</h4>
+                        <h4>📍 Rajlaxmi Tutorial, Dumuduma, Bhubaneswar</h4>
+                        <h4>⏱ Mon-Fri: 9am-5pm</h4>
+                    </div>
+                    <div class="quick-links">
+                        <a href="#home">Home</a>
+                        <a href="#about">About</a>
+                        <a href="#course">Course</a>
+                        <a href="#price">Pricing</a>
+                        <a href="#testimonial">Testimonial</a>
+                        <a href="#contact">Contact Us</a>
+                    </div>
+                </div>
+
+
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Free Trial Modal -->
+    <div class="trial-modal" id="trialModal" aria-hidden="true">
+        <div class="trial-modal__backdrop" id="trialBackdrop"></div>
+        <div class="trial-modal__dialog" role="dialog" aria-labelledby="trialTitle" aria-modal="true">
+            <div class="trial-modal__header">
+                <h3 id="trialTitle">Register for Free Trial</h3>
+                <button class="trial-modal__close" id="trialClose" aria-label="Close">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="trialForm" class="trial-form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="trialName">Full Name</label>
+                        <input type="text" id="trialName" name="name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="trialEmail">Email</label>
+                        <input type="email" id="trialEmail" name="email" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="trialPhone">Phone</label>
+                        <input type="tel" id="trialPhone" name="phone" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="trialCourseSelect">Course</label>
+                        <select id="trialCourseSelect" name="courseSelect" required>
+                            <option value="">Select a course</option>
+                            <option value="Business English Course">Business English Course</option>
+                            <option value="Advanced Vocab Class">Advanced Vocab Class</option>
+                            <option value="Grammar Workshop Alert">Grammar Workshop Alert</option>
+                            <option value="Communication Skills Boost">Communication Skills Boost</option>
+                        </select>
+                        <input type="text" id="trialCourseInput" name="courseInput" readonly style="display:none; margin-top: 8px;" />
+                    </div>
+                </div>
+                <button type="submit" class="trial-submit">Register & Unlock Free Trial</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Payment Modal for Pricing -->
+    <div class="payment-modal" id="paymentModal" aria-hidden="true">
+        <div class="payment-modal__backdrop" id="paymentBackdrop"></div>
+        <div class="payment-modal__dialog" role="dialog" aria-labelledby="paymentTitle" aria-modal="true">
+            <div class="payment-modal__header">
+                <h3 id="paymentTitle">Reserve Your Seat</h3>
+                <button class="payment-modal__close" id="paymentClose" aria-label="Close">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="paymentForm" class="payment-form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="buyerName">Full Name</label>
+                        <input type="text" id="buyerName" name="name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="buyerEmail">Email</label>
+                        <input type="email" id="buyerEmail" name="email" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="buyerPhone">Phone</label>
+                        <input type="tel" id="buyerPhone" name="phone" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="selectedPlan">Selected Plan</label>
+                        <input type="text" id="selectedPlan" name="plan" readonly required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="buyerStartDate">Preferred Start Date</label>
+                        <input type="date" id="buyerStartDate" name="startDate" required>
+                    </div>
+                </div>
+                <button type="button" class="payment-submit" id="paymentSubmit">Reserve Seat</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-container">
+            <div class="footer-left">
+                <p>COPYRIGHTS © 2025 SpellVoc, ALL RIGHTS RESERVED.</p>
+            </div>
+            <div class="footer-center">
+                <div class="social-icons">
+                    <a href="https://www.facebook.com/share/1Cv4os61rB/" target="_blank" class="social-icon" title="Facebook">
+                        <i class="fab fa-facebook-f"></i>
+                    </a>
+                    <a href="https://www.instagram.com/spellvoc_bbsr?igsh=NDVmd2NnMGZzdDY=" target="_blank" class="social-icon" title="Instagram">
+                        <i class="fab fa-instagram"></i>
+                    </a>
+                    <a href="#" class="social-icon" title="YouTube">
+                        <i class="fab fa-youtube"></i>
+                    </a>
+                </div>
+            </div>
+            <div class="footer-right">
+                <p>Design brewed by <a href="https://sweta123-ai.github.io/Portfolio/" target="_blank"
+                        rel="noopener noreferrer" class="designer-link">@Sweta</a></p>
+            </div>
+        </div>
+    </footer>
+
+    <div class="trial-unlocked" id="trialUnlocked">
+        Free trial unlocked! You can start any course now.
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    <script src="script.js"></script>
+</body>
+
+</html>
