@@ -2,15 +2,11 @@ const express = require('express');
 const cors = require('cors');
 const Razorpay = require('razorpay');
 const bodyParser = require('body-parser');
-const path = require('path'); // <-- add this
 require('dotenv').config();
 
 const app = express();
 app.use(cors());
 app.use(bodyParser.json());
-
-// Serve frontend files from 'public' folder (same level as server.js)
-app.use(express.static(path.join(__dirname, 'public'))); // adjust path if needed
 
 const razorpay = new Razorpay({
 	key_id: process.env.RAZORPAY_KEY_ID || 'rzp_test_1234567890abcdef',
@@ -32,12 +28,7 @@ app.post('/create-order', async (req, res) => {
 	}
 });
 
-// Optional: fallback for SPA
-app.get('*', (req, res) => {
-	res.sendFile(path.join(__dirname, 'public', 'index.html'));
-});
-
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
 	console.log(`Server running on http://localhost:${PORT}`);
-});
+}); 

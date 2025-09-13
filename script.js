@@ -609,109 +609,6 @@ window.addEventListener('DOMContentLoaded', function() {
     updateCourseButtons();
 })();
 
-// Payment provider key (set this to your Razorpay TEST key id to enable real checkout)
-const RAZORPAY_KEY_ID = 'YOUR_RAZORPAY_TEST_KEY_ID';
-
-// EmailJS configuration (set your own public key and service/template ids to enable email)
-const EMAILJS_PUBLIC_KEY = '6e95802d-c0ca-4728-afaa-68207eff1334';
-const EMAILJS_SERVICE_ID = 'YOUR_EMAILJS_SERVICE_ID';
-const EMAILJS_TEMPLATE_ID = 'YOUR_EMAILJS_TEMPLATE_ID';
-const RESERVATION_NOTIFY_EMAIL = 'swetasiprapanda3@gmail.com';
-
-// Optional fallback IDs if you used EmailJS defaults
-const EMAILJS_FALLBACK_SERVICE_ID = 'service_default';
-const EMAILJS_FALLBACK_TEMPLATE_ID = 'template_reservation';
-
-// Optional: Google Apps Script webhook URL (set to your deployed web app URL)
-const RESERVATION_WEBHOOK_URL = '';
-
-// Web3Forms configuration
-const WEB3FORMS_ACCESS_KEY = '17dd5cd4-e555-4d78-9009-8a4e09f41e9f';
-const WEB3FORMS_TO_EMAIL = 'spellvoc1997@gmail.com';
-
-async function sendReservationViaWeb3Forms({ name, email, phone, planName, priceText, startDate }) {
-    if (!WEB3FORMS_ACCESS_KEY) return { sent: false, reason: 'no_access_key' };
-    try {
-        const res = await fetch('https://api.web3forms.com/submit', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-            body: JSON.stringify({
-                access_key: WEB3FORMS_ACCESS_KEY,
-                to: WEB3FORMS_TO_EMAIL,
-                subject: `New Seat Reservation: ${planName}`,
-                from_name: name,
-                from_email: email,
-                name,
-                email,
-                phone,
-                selected_plan: planName,
-                plan_price: priceText || 'N/A',
-                start_date: startDate,
-                message: `Seat reserved for ${planName}${priceText ? ' (' + priceText + ')' : ''}.\nName: ${name}\nEmail: ${email}\nPhone: ${phone}\nPreferred Start: ${startDate}`
-            })
-        });
-        const data = await res.json().catch(() => ({}));
-        if (!res.ok || (data && data.success === false)) {
-            console.error('Web3Forms error:', res.status, data);
-            return { sent: false, reason: 'http_' + res.status, data };
-        }
-        return { sent: true };
-    } catch (err) {
-        console.error('Web3Forms request failed:', err);
-        return { sent: false, reason: 'network_error', error: err };
-    }
-}
-
-async function sendReservationToWebhook({ name, email, phone, planName, priceText, startDate }) {
-    if (!RESERVATION_WEBHOOK_URL) return { sent: false, reason: 'no_webhook' };
-    try {
-        const res = await fetch(RESERVATION_WEBHOOK_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                to: RESERVATION_NOTIFY_EMAIL,
-                name,
-                email,
-                phone,
-                plan: planName,
-                price: priceText,
-                startDate
-            })
-        });
-        if (!res.ok) {
-            const text = await res.text();
-            console.error('Webhook error:', res.status, text);
-            return { sent: false, reason: 'http_' + res.status };
-        }
-        return { sent: true };
-    } catch (err) {
-        console.error('Webhook request failed:', err);
-        return { sent: false, reason: 'network_error', error: err };
-    }
-}
-
-// API helper
-const API_BASE = 'http://localhost:4000';
-async function apiFetch(path, { method = 'GET', body } = {}) {
-    const opts = {
-        method,
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include'
-    };
-    if (body) opts.body = JSON.stringify(body);
-    const url = `${API_BASE}${path}`;
-    console.log('[API][REQUEST]', method, url, body || null);
-    const res = await fetch(url, opts);
-    let data = null;
-    try { data = await res.json(); } catch (_) {}
-    console.log('[API][RESPONSE]', method, url, res.status, data);
-    if (!res.ok) {
-        const msg = (data && (data.error || data.message)) || `HTTP ${res.status}`;
-        throw new Error(msg);
-    }
-    return data;
-}
-
 // Hook pricing Buy Now buttons
 document.querySelectorAll('.pricing-card .signup-btn, .pricing-card .payment-btn, .pricing-card .buy-btn').forEach(btn => {
     btn.addEventListener('click', (e) => {
@@ -727,7 +624,7 @@ document.querySelectorAll('.pricing-card .signup-btn, .pricing-card .payment-btn
         const planPrice = document.getElementById('planPrice');
 
         selectedPlan.value = planName;
-        if (planPrice) planPrice.value = priceText; // planPrice removed in Option B, guard existence
+        planPrice.value = priceText;
 
         function openPayment() {
             paymentModal.classList.add('active');
@@ -745,17 +642,18 @@ document.querySelectorAll('.pricing-card .signup-btn, .pricing-card .payment-btn
         paymentBackdrop?.addEventListener('click', closePayment, { once: true });
         paymentClose?.addEventListener('click', closePayment, { once: true });
 
-        // Submit handler for Reserve Seat (no gateway)
+        // Submit handler (button click to prevent native form navigation)
         const paymentSubmitBtn = document.getElementById('paymentSubmit');
         if (!paymentSubmitBtn) return;
-        paymentSubmitBtn.onclick = async function onReserve(ev) {
+        // Overwrite any previous handler to avoid duplicates
+        paymentSubmitBtn.onclick = function onPay(ev) {
             ev.preventDefault();
             const name = document.getElementById('buyerName').value.trim();
             const email = document.getElementById('buyerEmail').value.trim();
             const phone = document.getElementById('buyerPhone').value.trim();
-            const startDate = document.getElementById('buyerStartDate')?.value || '';
+            const method = document.getElementById('paymentMethod').value;
 
-            if (!name || !email || !phone || !startDate) {
+            if (!name || !email || !phone || !method) {
                 alert('Please fill all fields.');
                 return;
             }
@@ -770,39 +668,42 @@ document.querySelectorAll('.pricing-card .signup-btn, .pricing-card .payment-btn
                 return;
             }
 
-            // 1) Web3Forms (primary)
-            let delivered = false;
-            const web3Res = await sendReservationViaWeb3Forms({ name, email, phone, planName, priceText, startDate });
-            delivered = web3Res.sent;
-
-            // 2) If Web3Forms fails, try webhook (if set)
-            if (!delivered) {
-                const webhookResult = await sendReservationToWebhook({ name, email, phone, planName, priceText, startDate });
-                delivered = webhookResult.sent;
-            }
-
-            if (!delivered && window.Swal) {
-                Swal.fire({
-                    icon: 'warning',
-                    title: 'Note',
-                    text: 'Reservation saved. Notification could not be emailed automatically. Configure Web3Forms or add a webhook URL.',
-                    confirmButtonColor: '#667eea'
-                });
-            }
-
-            // Success UX
-                if (window.Swal) {
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Seat Reserved',
-                    text: `Your seat for ${planName}${priceText ? ' (' + priceText + ')' : ''} is reserved for 48 hours. We will contact you to complete enrollment.`,
-                    confirmButtonColor: '#667eea'
-                });
+            // Real Razorpay checkout if key is configured
+            if (window.Razorpay && RAZORPAY_KEY_ID && RAZORPAY_KEY_ID !== 'YOUR_RAZORPAY_TEST_KEY_ID') {
+                // Close the modal first as requested
+                closePayment();
+                const amountNumber = (priceText.replace(/[^0-9]/g,'') ? parseInt(priceText.replace(/[^0-9]/g,''), 10) : 0) * 100;
+                const options = {
+                    key: RAZORPAY_KEY_ID,
+                    amount: amountNumber || 19900,
+                    currency: 'INR',
+                    name: 'SpellVoc',
+                    description: `${planName} Purchase`,
+                    prefill: { name, email, contact: phone },
+                    notes: { plan: planName },
+                    theme: { color: '#667eea' },
+                    handler: function (response){
+                        if (window.Swal) {
+                            Swal.fire({ icon: 'success', title: 'Payment Successful', text: `Purchased ${planName}${priceText ? ' (' + priceText + ')' : ''}. Payment id: ${response.razorpay_payment_id}`, confirmButtonColor: '#667eea' });
+                        }
+                        try { paymentForm.reset(); } catch (e) {}
+                    },
+                    modal: { ondismiss: function(){ if (window.Swal) { Swal.fire({ icon: 'info', title: 'Payment Cancelled', text: 'You closed the payment window.' }); } try { paymentForm.reset(); } catch (e) {} } }
+                };
+                options.method = { upi: false, card: false, netbanking: false, wallet: false };
+                if (method === 'upi') options.method.upi = true;
+                if (method === 'card') options.method.card = true;
+                if (method === 'netbanking') options.method.netbanking = true;
+                const rzp = new Razorpay(options);
+                rzp.open();
             } else {
-                alert(`Seat reserved for ${planName}${priceText ? ' (' + priceText + ')' : ''}. We'll contact you soon.`);
+                // Real payment not configured: show clear message (no test/mock)
+                if (window.Swal) {
+                    Swal.fire({ icon: 'error', title: 'Payment Not Configured', text: 'Please add your Razorpay TEST key id in script.js to enable real payments.' });
                 }
                 try { paymentForm.reset(); } catch (e) {}
                 closePayment();
+            }
         };
 
         openPayment();
@@ -831,276 +732,6 @@ function openMockPayment(method, planName, priceText, { onDone } = {}) {
     }
 }
 
-// Prefer backend: intercept register/login submissions before previous demo handlers
-if (registerForm) {
-    registerForm.addEventListener('submit', async (e) => {
-        // Capture first and stop demo handlers
-        e.preventDefault();
-        e.stopImmediatePropagation();
-        clearAllErrors?.();
-        const fullName = document.getElementById('registerName').value.trim();
-        const email = document.getElementById('registerEmail').value.trim();
-        const phone = document.getElementById('registerPhone').value.trim();
-        const password = document.getElementById('registerPassword').value;
-        if (!fullName || !email || !phone || !password) {
-            alert('Please fill all required fields');
-            return;
-        }
-        try {
-            const out = await apiFetch('/api/auth/register', { method: 'POST', body: { fullName, email, phone, password } });
-            console.log('[REGISTER][OK]', out);
-            if (window.Swal) Swal.fire({ icon: 'success', title: 'Registered', text: `Welcome, ${out.fullName}` });
-            registerForm.reset();
-            authSlide?.classList.remove('active');
-        } catch (err) {
-            console.error('[REGISTER][ERR]', err);
-            alert(`Register failed: ${err.message}`);
-        }
-    }, true);
-}
-
-if (loginForm) {
-    loginForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        e.stopImmediatePropagation();
-        const emailOrId = document.getElementById('loginUserId').value.trim();
-        const password = document.getElementById('loginPassword').value;
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailRegex.test(emailOrId)) {
-            alert('Please enter your registered email address (e.g., you@example.com).');
-            return;
-        }
-        // Treat loginUserId as email for backend
-        try {
-            const out = await apiFetch('/api/auth/login', { method: 'POST', body: { email: emailOrId, password } });
-            console.log('[LOGIN][OK]', out);
-            localStorage.setItem('last_login_email', emailOrId);
-            if (window.Swal) {
-                Swal.fire({ icon: 'success', title: 'Login successful', timer: 800, showConfirmButton: false });
-            }
-            try { await syncPendingSelections(); } catch(e) { console.warn('[SYNC][ERR]', e?.message); }
-            authSlide?.classList.remove('active');
-            setTimeout(() => { window.location.href = 'dashboard.html'; }, 300);
-        } catch (err) {
-            console.error('[LOGIN][ERR]', err);
-            alert(`Login failed: ${err.message}`);
-        }
-    }, true);
-}
-
-// Local persistence for pre-login selections
-function getPendingTrials() {
-    try { return JSON.parse(localStorage.getItem('pending_trials') || '[]'); } catch { return []; }
-}
-function setPendingTrials(list) {
-    localStorage.setItem('pending_trials', JSON.stringify(list));
-}
-function addPendingTrial(courseTitle) {
-    const list = getPendingTrials();
-    list.push({ courseTitle, ts: Date.now() });
-    setPendingTrials(list);
-    console.log('[TRIAL][PENDING][ADDED]', courseTitle);
-}
-
-function removePendingTrial(courseTitle) {
-    const list = getPendingTrials().filter(t => (t.courseTitle || '').trim() !== (courseTitle || '').trim());
-    setPendingTrials(list);
-}
-
-function getPendingReservations() {
-    try { return JSON.parse(localStorage.getItem('pending_reservations') || '[]'); } catch { return []; }
-}
-function setPendingReservations(list) {
-    localStorage.setItem('pending_reservations', JSON.stringify(list));
-}
-function addPendingReservation(item) {
-    const list = getPendingReservations();
-    list.push({ ...item, ts: Date.now() });
-    setPendingReservations(list);
-    console.log('[RESERVATION][PENDING][ADDED]', item);
-}
-
-async function syncPendingSelections() {
-    // Sync trials
-    const trials = getPendingTrials();
-    for (const t of trials) {
-        try {
-            await apiFetch('/api/trials', { method: 'POST', body: { courseTitle: t.courseTitle } });
-            console.log('[TRIAL][PENDING][SYNCED]', t.courseTitle);
-        } catch (e) {
-            console.warn('[TRIAL][PENDING][SYNC_ERR]', t.courseTitle, e.message);
-        }
-    }
-    if (trials.length) setPendingTrials([]);
-
-    // Sync reservations
-    const resv = getPendingReservations();
-    for (const r of resv) {
-        try {
-            await apiFetch('/api/reservations', { method: 'POST', body: { planName: r.planName, startDate: r.startDate, priceText: r.priceText || '' } });
-            console.log('[RESERVATION][PENDING][SYNCED]', r);
-        } catch (e) {
-            console.warn('[RESERVATION][PENDING][SYNC_ERR]', r, e.message);
-        }
-    }
-    if (resv.length) setPendingReservations([]);
-}
-
-// Hook into trial registration to also store on backend
-(function enhanceTrialFlow(){
-    const form = document.getElementById('trialForm');
-    if (!form) return;
-    form.addEventListener('submit', async function(e){
-        try {
-            const inputEl = document.getElementById('trialCourseInput');
-            const selectEl = document.getElementById('trialCourseSelect');
-            const isInputMode = inputEl && inputEl.style.display === 'block';
-            let courseTitle = '';
-            if (isInputMode) {
-                courseTitle = (inputEl.value || '').trim();
-            } else if (selectEl) {
-                courseTitle = (selectEl.value || selectEl.options[selectEl.selectedIndex]?.text || '').trim();
-            }
-            if (!courseTitle) {
-                console.warn('[TRIAL][CAPTURE] No courseTitle detected');
-                return;
-            }
-            // Add to pending first to ensure persistence, then attempt API
-            addPendingTrial(courseTitle);
-            try {
-                await apiFetch('/api/trials', { method: 'POST', body: { courseTitle } });
-                console.log('[TRIAL][STORE][OK]', courseTitle);
-                removePendingTrial(courseTitle);
-            } catch (err) {
-                console.warn('[TRIAL][STORE][ERR] Kept locally to sync after login.', err.message);
-            }
-        } catch (err) {
-            console.warn('[TRIAL][CAPTURE][ERR]', err.message);
-        }
-    }, true); // capture phase so we read before any other submit handler resets form
-})();
-
-// Replace reservation email flow with backend reservation first, keep web3forms as secondary
-// Find existing payment submit handler and enhance it where we already hooked earlier
-// We will detect the button by id and wrap the onclick after it's assigned
-(function enhanceReservationFlow(){
-    document.addEventListener('click', function(e){
-        if (e.target && e.target.id === 'paymentSubmit') {
-            // no-op: our main handler is set in pricing button click; we augment there
-        }
-    });
-})();
-
-// Update the existing pricing click handler augmentation to call backend before web3forms
-// (Locate the handler we created earlier and modify inside)
-// Note: Below we overwrite the onReserve function binding by reassigning after definition
-(function patchPricingHandler(){
-    const bindButtons = () => {
-        document.querySelectorAll('.pricing-card .signup-btn, .pricing-card .payment-btn, .pricing-card .buy-btn').forEach(btn => {
-            // If already bound by us, skip
-            if (btn.dataset.backendWired === '1') return;
-            btn.dataset.backendWired = '1';
-            btn.addEventListener('click', () => {
-                // After modal opens, rebind submit to call backend first
-                setTimeout(() => {
-                    const paymentSubmitBtn = document.getElementById('paymentSubmit');
-                    if (!paymentSubmitBtn) return;
-                    const planNameEl = document.getElementById('selectedPlan');
-                    const priceHeader = btn.closest('.pricing-card')?.querySelector('.card-header .price');
-                    const priceText = priceHeader?.textContent?.trim() || '';
-                    paymentSubmitBtn.onclick = async function(ev){
-                        ev.preventDefault();
-                        const name = document.getElementById('buyerName').value.trim();
-                        const email = document.getElementById('buyerEmail').value.trim();
-                        const phone = document.getElementById('buyerPhone').value.trim();
-                        const startDate = document.getElementById('buyerStartDate')?.value || '';
-                        const planName = planNameEl?.value || 'Selected Plan';
-                        if (!name || !email || !phone || !startDate) { alert('Please fill all fields.'); return; }
-                        try {
-                            const out = await apiFetch('/api/reservations', { method: 'POST', body: { planName, startDate, priceText } });
-                            console.log('[RESERVATION][OK]', out);
-                        } catch (err) {
-                            console.warn('[RESERVATION][ERR] Stored locally to sync after login.', err.message);
-                            addPendingReservation({ planName, startDate, priceText });
-                        }
-                        // continue existing success UI which is already implemented below
-                        if (window.Swal) {
-                            Swal.fire({
-                                icon: 'success',
-                                title: 'Seat Reserved',
-                                text: `Your seat for ${planName}${priceText ? ' (' + priceText + ')' : ''} is reserved for 48 hours. We will contact you to complete enrollment.`,
-                                confirmButtonColor: '#667eea'
-                            });
-                        } else {
-                            alert(`Seat reserved for ${planName}${priceText ? ' (' + priceText + ')' : ''}. We'll contact you soon.`);
-                        }
-                        try { document.getElementById('paymentForm')?.reset(); } catch (e) {}
-                        const paymentModal = document.getElementById('paymentModal');
-                        paymentModal?.classList.remove('active');
-                        paymentModal?.setAttribute('aria-hidden', 'true');
-                    };
-                }, 50);
-            });
-        });
-    };
-    bindButtons();
-})();
-
-// Testimonial videos: click to play/pause, unmute, pause others
-(function() {
-    document.addEventListener('DOMContentLoaded', function() {
-        const videos = Array.from(document.querySelectorAll('.testimonial-video'));
-        if (!videos.length) return;
-
-        function pauseOthers(except) {
-            videos.forEach(v => {
-                if (v !== except) {
-                    try { v.pause(); } catch (e) {}
-                }
-            });
-        }
-
-        videos.forEach(video => {
-            // Start paused and muted off for user interaction; sound on when user clicks to play
-            video.pause();
-            video.muted = false;
-            video.controls = true; // ensure fullscreen and native controls available
-
-            // Toggle play/pause on click area
-            video.addEventListener('click', async function(e) {
-                try {
-                    if (video.paused) {
-                        pauseOthers(video);
-                        video.muted = false;
-                        await video.play();
-                    } else {
-                        video.pause();
-                    }
-                } catch (err) {
-                    // Autoplay restrictions should not apply since it's user gesture, ignore
-                }
-            });
-
-            // When playing, ensure others are paused and unmute
-            video.addEventListener('play', function() {
-                pauseOthers(video);
-                video.muted = false;
-            });
-
-            // Optional: keyboard space/enter to toggle when focused
-            video.addEventListener('keydown', async function(ev) {
-                if (ev.code === 'Space' || ev.code === 'Enter') {
-                    ev.preventDefault();
-                    if (video.paused) {
-                        pauseOthers(video);
-                        video.muted = false;
-                        try { await video.play(); } catch (e) {}
-                    } else {
-                        video.pause();
-                    }
-                }
-            });
-        });
-    });
-})();
+// Payment provider key (set this to your Razorpay TEST key id to enable real checkout)
+const RAZORPAY_KEY_ID = 'YOUR_RAZORPAY_TEST_KEY_ID';
 
