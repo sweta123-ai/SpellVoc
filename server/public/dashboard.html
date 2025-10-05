@@ -1,0 +1,3057 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SpellVoc - Dashboard</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        :root { --nav-h: 60px; --sb-w: 240px; --bg:#f5f7fb; --surface:#fff; --text:#2a2e3b; --muted:#6b7280; --primary:#6c7bff; --primary2:#764ba2; }
+        body { margin: 0; background: var(--bg); color: var(--text); font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Helvetica Neue, Arial; }
+        .dash-navbar {
+            position: fixed; top: 0; left: 0; right: 0; height: var(--nav-h);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 16px; color: #fff; z-index: 30; box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .dash-navbar { position: fixed; top:0; left:0; right:0; height:var(--nav-h); background: linear-gradient(135deg, var(--primary) 0%, var(--primary2) 100%); display:flex; align-items:center; justify-content:space-between; padding:0 16px; color:#fff; z-index:30; box-shadow:0 6px 24px rgba(108,123,255,0.28); }
+        .dash-brand { font-weight:800; letter-spacing:.4px; display:flex; align-items:center; gap:10px; }
+        .dash-hamburger { display:none; width:36px; height:36px; border-radius:8px; border:1px solid rgba(255,255,255,0.35); color:#fff; background:transparent; cursor:pointer; align-items:center; justify-content:center; font-size:20px; }
+        .dash-userarea { display:flex; align-items:center; gap:10px; position:relative; }
+        .dash-avatar { width:36px; height:36px; border-radius:10px; background:#fff; color:var(--primary2); display:flex; align-items:center; justify-content:center; font-weight:800; box-shadow:0 6px 16px rgba(0,0,0,0.12); }
+        .dash-username { font-weight:700; opacity:.95; }
+        .dash-email-tooltip { position:absolute; top:46px; right:0; background:#fff; color:#333; border-radius:10px; padding:10px 12px; box-shadow:0 14px 28px rgba(0,0,0,0.12); font-size:0.9rem; display:none; white-space:nowrap; border:1px solid #eef0f6; }
+        .dash-userarea:hover .dash-email-tooltip { display:block; }
+        .power-btn { background:#e74c3c; color:#fff; border:none; border-radius:10px; width:36px; height:36px; display:flex; align-items:center; justify-content:center; cursor:pointer; font-weight:800; box-shadow:0 6px 16px rgba(231,76,60,0.35); }
+        .power-btn:hover { filter:brightness(1.05); }
+        .dash-shell { display:flex; }
+        .dash-sidebar { position:fixed; top:var(--nav-h); left:0; bottom:0; width:var(--sb-w); background:var(--surface); border-right:1px solid #eef0f6; padding:14px; overflow:auto; }
+        .dash-sidebar a { display:flex; align-items:center; gap:10px; padding:10px 12px; color:#445; text-decoration:none; border-radius:10px; margin-bottom:6px; font-weight:600; transition: background .15s ease, color .15s ease; }
+        .dash-sidebar a:hover { background:#eef2ff; color:var(--primary2); }
+        .dash-sidebar a.active { background:#e9edff; color:var(--primary2); box-shadow: inset 0 0 0 1px #dbe2ff; }
+        .dash-main { margin-top:var(--nav-h); margin-left:var(--sb-w); padding:28px 28px 28px 40px; min-height:calc(100vh - var(--nav-h)); }
+        .grid { display:grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
+        .card { background:var(--surface); border-radius:16px; padding:1.1rem 1.2rem; box-shadow:0 10px 24px rgba(24,33,77,0.06), 0 1px 0 1px #f0f3fa; border:1px solid #eef0f6; }
+        .card:hover { box-shadow:0 16px 34px rgba(24,33,77,0.12); }
+        .pill { display:inline-block; padding:4px 10px; border-radius:999px; background:#eef2ff; color:#4f46e5; font-size:12px; font-weight:700; letter-spacing:.2px; }
+        .muted { color:var(--muted); font-size: 0.9rem; }
+        h2 { margin: 8px 0 12px; font-size: 1.25rem; letter-spacing:.2px; display:flex; align-items:center; gap:10px; }
+        h2::before { content:''; width:26px; height:26px; border-radius:8px; background: linear-gradient(135deg, #e0e7ff, #f5f3ff); box-shadow: inset 0 0 0 1px #e0e7ff; }
+        /* Dashboard Overview layout */
+        .ov-layout { display:grid; grid-template-columns: 1fr; gap: 16px; }
+        .ov-left { display:grid; gap:16px; }
+        .ov-right { display:grid; gap:16px; }
+        .ov-hero { display:flex; align-items:center; justify-content:space-between; padding:18px 20px; border-radius:16px; background:linear-gradient(135deg, #e0e7ff 0%, #f5f3ff 100%); border:1px solid #e7e9fb; box-shadow: 0 10px 24px rgba(24,33,77,0.06); }
+        .ov-hero h3 { margin:0 0 6px; font-size:1.15rem; }
+        .ov-hero p { margin:0; color:#4b5563; }
+        .ov-hero .cta { background:#111827; color:#fff; border:none; padding:10px 14px; border-radius:10px; cursor:pointer; font-weight:700; }
+        .welcome-avatar-container { display:flex; align-items:center; justify-content:center; }
+        .welcome-avatar { width:80px; height:80px; border-radius:50%; background:linear-gradient(135deg, #667eea 0%, #764ba2 100%); display:flex; align-items:center; justify-content:center; font-size:32px; color:#fff; box-shadow:0 8px 20px rgba(108,123,255,0.3); border:3px solid #fff; }
+        .ov-cols { display:grid; grid-template-columns: 1fr; gap: 16px; }
+        .kpi { display:flex; align-items:center; gap:14px; }
+        .kpi .ring { width:56px; height:56px; border-radius:50%; background:
+            conic-gradient(#f59e0b var(--val,50%), #e5e7eb 0);
+            display:grid; place-items:center; }
+        .kpi .ring span { background:#fff; width:40px; height:40px; border-radius:50%; display:grid; place-items:center; font-weight:800; font-size:.9rem; color:#6b7280; border:1px solid #eef0f6; }
+        .kpi .meta { line-height:1.2; }
+        .kpi .meta .title { font-weight:800; }
+        .prog { margin-top:8px; background:#eef2ff; height:8px; border-radius:999px; overflow:hidden; }
+        .prog > i { display:block; height:100%; background:#4f46e5; width: var(--w,0%); }
+        @media (min-width: 1024px) {
+            .ov-layout { grid-template-columns: 3fr 1.2fr; }
+            .ov-cols { grid-template-columns: repeat(3, 1fr); }
+        }
+        @media (min-width: 1400px) {
+            .ov-layout { grid-template-columns: 5fr 2fr; }
+        }
+        /* Calendar */
+        .calendar { display:grid; grid-template-rows: auto auto 1fr; gap:10px; }
+        .cal-head { display:grid; grid-template-columns: 40px 1fr 40px; align-items:center; justify-items:center; font-weight:800; gap:8px; position:relative; }
+        .cal-pickers { position:absolute; top:42px; left:50%; transform:translateX(-50%); background:#fff; border:1px solid #e5e7eb; border-radius:10px; box-shadow:0 10px 24px rgba(24,33,77,0.12); padding:10px; display:none; gap:8px; }
+        .cal-pickers select { padding:6px 8px; border-radius:8px; border:1px solid #e5e7eb; }
+        .cal-week { display:grid; grid-template-columns: repeat(7, 1fr); gap:6px; color:#6b7280; font-size:.85rem; }
+        .cal-grid { display:grid; grid-template-columns: repeat(7, 1fr); gap:6px; }
+        .cal-cell { height:36px; border-radius:10px; background:#f3f4ff; display:grid; place-items:center; color:#4b5563; }
+        .cal-cell.muted { background:#f7f7fb; color:#9aa0aa; }
+        .cal-cell.today { background:#4f46e5; color:#fff; font-weight:800; }
+        /* Circle pies */
+        .circle-wrap { display:grid; grid-template-columns: repeat(2, 1fr); gap:16px; }
+        .pie { display:grid; grid-template-rows: auto auto; justify-items:center; gap:8px; }
+        .pie .ring { width:96px; height:96px; border-radius:50%; background: conic-gradient(#f59e0b var(--val,50%), #e5e7eb 0); display:grid; place-items:center; }
+        .pie .ring span { background:#fff; width:68px; height:68px; border-radius:50%; display:grid; place-items:center; font-weight:800; color:#6b7280; border:1px solid #eef0f6; }
+        /* Overview list cards */
+        .ov-list { margin-top:8px; }
+        .ov-list .item { display:flex; justify-content:space-between; gap:12px; padding:8px 0; border-bottom:1px dashed #e6e8f3; }
+        .ov-list .item:last-child { border-bottom:none; }
+        .ov-list .title { font-weight:700; }
+        .badge { display:inline-block; background:#eef2ff; color:#4f46e5; font-weight:800; font-size:.75rem; border-radius:999px; padding:2px 8px; }
+        .error-box { background:#fff5f5; color:#a94442; border:1px solid #f5c2c2; border-radius:10px; padding:10px 12px; }
+        pre { white-space:pre-wrap; word-break:break-word; }
+        
+        /* Trial Detail Card Styles */
+        .trial-detail-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; padding-bottom:16px; border-bottom:1px solid #eef0f6; }
+        .trial-detail-title { display:flex; align-items:center; gap:12px; }
+        .trial-detail-title h3 { margin:0; font-size:1.4rem; color:#2a2e3b; }
+        .trial-badge { background:linear-gradient(135deg, #667eea 0%, #764ba2 100%); color:#fff; padding:4px 12px; border-radius:20px; font-size:0.8rem; font-weight:700; }
+        .close-btn { background:#f3f4f6; border:none; width:32px; height:32px; border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:18px; color:#6b7280; transition:all 0.2s ease; }
+        .close-btn:hover { background:#e5e7eb; color:#374151; }
+        
+        .trial-info-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:16px; margin-bottom:24px; }
+        .trial-info-item { background:#f8fafc; padding:16px; border-radius:12px; border:1px solid #e2e8f0; }
+        .info-label { font-size:0.85rem; color:#64748b; font-weight:600; margin-bottom:6px; }
+        .info-value { font-size:1rem; color:#1e293b; font-weight:700; }
+        .trial-status { color:#059669; }
+        .progress-bar { background:#e2e8f0; height:8px; border-radius:4px; overflow:hidden; margin-bottom:6px; }
+        .progress-fill { background:linear-gradient(90deg, #667eea 0%, #764ba2 100%); height:100%; transition:width 0.3s ease; }
+        
+        .trial-description { margin-bottom:24px; }
+        .trial-description h4 { margin:0 0 12px; color:#374151; font-size:1.1rem; }
+        .trial-description p { margin:0; color:#6b7280; line-height:1.6; }
+        
+        .trial-actions { display:flex; gap:12px; margin-bottom:0; }
+        .learn-more-btn { padding:12px 24px; border:none; border-radius:10px; font-weight:700; cursor:pointer; transition:all 0.2s ease; background:#f3f4f6; color:#374151; }
+        .learn-more-btn:hover { background:#e5e7eb; }
+        
+        /* Trials Section Layout */
+        .trials-main-layout { display:grid; grid-template-columns: 2fr 1fr; gap:24px; width:100%; }
+        .trials-left-side { display:flex; flex-direction:column; gap:20px; }
+        .trial-right-content { display:flex; flex-direction:column; gap:20px; }
+        
+        /* Reservations Section Layout */
+        .reservations-main-layout { display:grid; grid-template-columns: 2fr 1fr; gap:24px; width:100%; }
+        .reservations-left-side { display:flex; flex-direction:column; gap:20px; }
+        .reservation-right-content { display:flex; flex-direction:column; gap:20px; }
+        
+        /* Courses Section Layout */
+        .courses-main-layout { display:grid; grid-template-columns: 2fr 1fr; gap:24px; width:100%; }
+        .courses-left-side { display:flex; flex-direction:column; gap:20px; }
+        .course-right-content { display:flex; flex-direction:column; gap:20px; }
+        
+        /* Trial Detail Layout */
+        .trial-detail-layout { display:grid; grid-template-columns: 1fr; gap:24px; width:100%; }
+        .trial-left-content { display:flex; flex-direction:column; gap:20px; }
+        
+        /* Detail Section Margins */
+        .trial-detail-section { margin-top:20px; }
+        .reservation-detail-section { margin-top:20px; }
+        
+        /* Grid Layouts */
+        .trial-details-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(300px, 1fr)); gap:20px; margin-bottom:0; }
+        
+        /* Individual Card Styles */
+        .trial-detail-card h4 { margin:0 0 16px; color:#374151; font-size:1.1rem; display:flex; align-items:center; gap:8px; }
+        .trial-notes-card h4 { margin:0 0 16px; color:#374151; font-size:1.1rem; display:flex; align-items:center; gap:8px; }
+        .trial-feature-card h4 { margin:0; color:#374151; font-size:1rem; }
+        
+        /* Reservation Card Styles */
+        .reservation-detail-card h4 { margin:0 0 16px; color:#374151; font-size:1.1rem; display:flex; align-items:center; gap:8px; }
+        .reservation-notes-card h4 { margin:0 0 16px; color:#374151; font-size:1.1rem; display:flex; align-items:center; gap:8px; }
+        .reservation-feature-card h4 { margin:0; color:#374151; font-size:1rem; }
+        .reservation-badge { background:linear-gradient(135deg, #10b981 0%, #059669 100%); color:#fff; padding:4px 12px; border-radius:20px; font-size:0.8rem; font-weight:700; }
+        .reservation-status { color:#059669; }
+        .reservation-info-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:16px; margin-bottom:24px; }
+        .reservation-info-item { background:#f0fdf4; padding:16px; border-radius:12px; border:1px solid #bbf7d0; }
+        .reservation-details-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(300px, 1fr)); gap:20px; margin-bottom:0; }
+        
+        /* Reservation Features */
+        .features-list { display:flex; flex-direction:column; gap:12px; }
+        .feature-item { display:flex; align-items:center; gap:12px; padding:12px; background:#f0fdf4; border-radius:8px; border:1px solid #bbf7d0; }
+        .benefits-points { list-style:none; padding:0; margin:0; }
+        .benefits-points li { padding:8px 0; color:#4b5563; position:relative; padding-left:20px; }
+        .benefits-points li::before { content:'✓'; position:absolute; left:0; color:#059669; font-weight:700; }
+        .requirements { display:flex; flex-wrap:wrap; gap:8px; }
+        .req-item { background:#d1fae5; color:#065f46; padding:4px 12px; border-radius:16px; font-size:0.85rem; font-weight:600; }
+        
+        .curriculum-list { display:flex; flex-direction:column; gap:12px; }
+        .curriculum-item { display:flex; align-items:center; gap:12px; padding:12px; background:#f8fafc; border-radius:8px; border:1px solid #e2e8f0; }
+        .curriculum-icon { font-size:20px; }
+        .curriculum-content { flex:1; }
+        .curriculum-title { font-weight:600; color:#374151; margin-bottom:4px; }
+        .curriculum-duration { font-size:0.85rem; color:#6b7280; }
+        
+        .learning-points { list-style:none; padding:0; margin:0; }
+        .learning-points li { padding:8px 0; color:#4b5563; position:relative; padding-left:20px; }
+        .learning-points li::before { content:'✓'; position:absolute; left:0; color:#059669; font-weight:700; }
+        
+        .prerequisites { display:flex; flex-wrap:wrap; gap:8px; }
+        .prereq-item { background:#dbeafe; color:#1e40af; padding:4px 12px; border-radius:16px; font-size:0.85rem; font-weight:600; }
+        
+        .notes-container { background:#f8fafc; padding:16px; border-radius:12px; border:1px solid #e2e8f0; overflow:hidden; }
+        .notes-container textarea { width:100%; border:1px solid #d1d5db; border-radius:8px; padding:12px; font-family:inherit; font-size:0.9rem; resize:vertical; margin:0; box-sizing:border-box; }
+        .notes-container textarea:focus { outline:none; border-color:#667eea; box-shadow:0 0 0 3px rgba(102,126,234,0.1); }
+        .notes-actions { display:flex; align-items:center; gap:12px; margin-top:12px; }
+        .save-notes-btn { background:#059669; color:#fff; border:none; padding:8px 16px; border-radius:6px; font-weight:600; cursor:pointer; }
+        .save-notes-btn:hover { background:#047857; }
+        .notes-status { font-size:0.85rem; color:#6b7280; }
+        
+        .feature-header { display:flex; align-items:center; gap:12px; margin-bottom:12px; }
+        .feature-icon { font-size:24px; }
+        .feature-desc { font-size:0.9rem; color:#6b7280; margin-bottom:16px; line-height:1.5; }
+        .feature-btn { background:#f3f4f6; color:#374151; border:none; padding:8px 16px; border-radius:6px; font-size:0.9rem; font-weight:600; cursor:pointer; width:100%; }
+        .feature-btn:hover { background:#e5e7eb; }
+        
+        /* Notes History Styles */
+        .trial-notes-history-card h4 { margin:0 0 16px; color:#374151; font-size:1.1rem; display:flex; align-items:center; gap:8px; }
+        .notes-history-container { max-height:200px; overflow-y:auto; }
+        .no-notes { color:#9ca3af; font-style:italic; text-align:center; padding:20px; }
+        .note-history-item { background:#f8fafc; padding:12px; border-radius:8px; margin-bottom:8px; border-left:3px solid #667eea; }
+        .note-history-date { font-size:0.8rem; color:#6b7280; margin-bottom:4px; }
+        .note-history-content { color:#374151; font-size:0.9rem; }
+        
+        /* Reminder Settings */
+        .reminder-settings { margin:12px 0; }
+        .time-input { width:100%; padding:8px; border:1px solid #d1d5db; border-radius:6px; margin-bottom:8px; }
+        .reminder-status { font-size:0.85rem; color:#059669; }
+        
+        /* Progress Details */
+        .progress-details { margin:12px 0; }
+        .progress-metric { display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid #e5e7eb; }
+        .progress-metric:last-child { border-bottom:none; }
+        .metric-label { color:#6b7280; font-size:0.9rem; }
+        .metric-value { color:#374151; font-weight:600; }
+        
+        /* Question Form */
+        .question-form { margin:12px 0; }
+        .question-form textarea { width:100%; padding:8px; border:1px solid #d1d5db; border-radius:6px; margin-bottom:8px; font-family:inherit; resize:vertical; }
+        .submit-question-btn { background:#667eea; color:#fff; border:none; padding:8px 16px; border-radius:6px; font-weight:600; cursor:pointer; width:100%; }
+        .submit-question-btn:hover { background:#5a67d8; }
+        
+        /* Question History */
+        .question-history-container { max-height:200px; overflow-y:auto; }
+        .no-questions { color:#9ca3af; font-style:italic; text-align:center; padding:20px; }
+        .question-history-item { background:#f8fafc; padding:12px; border-radius:8px; margin-bottom:8px; border-left:3px solid #667eea; }
+        .question-history-date { font-size:0.8rem; color:#6b7280; margin-bottom:4px; }
+        .question-history-content { color:#374151; font-size:0.9rem; margin-bottom:4px; }
+        .question-history-status { font-size:0.75rem; color:#059669; font-weight:600; }
+        
+        /* Course Section Styles */
+        .course-detail-section { margin-top:20px; }
+        
+        /* Course Cards */
+        .course-item { display:flex; justify-content:space-between; align-items:center; padding:16px; border-bottom:1px dashed #e6e6e6; cursor:pointer; border-radius:8px; transition:background 0.2s ease; }
+        .course-item:hover { background:#f8fafc; }
+        .course-info { display:flex; align-items:center; gap:12px; }
+        .course-icon { width:40px; height:40px; border-radius:10px; background:linear-gradient(135deg, #667eea 0%, #764ba2 100%); display:flex; align-items:center; justify-content:center; font-size:18px; color:#fff; }
+        .course-title { font-weight:600; color:#374151; margin-bottom:4px; }
+        .course-difficulty { font-size:0.8rem; color:#6b7280; }
+        .course-progress { display:flex; align-items:center; gap:8px; }
+        .course-progress-bar { width:100px; height:6px; background:#e5e7eb; border-radius:3px; overflow:hidden; }
+        .course-progress-fill { height:100%; background:linear-gradient(90deg, #667eea 0%, #764ba2 100%); transition:width 0.3s ease; }
+        .course-rating { display:flex; align-items:center; gap:4px; }
+        .star { color:#fbbf24; font-size:14px; }
+        
+        /* Course Detail Cards */
+        .course-main-card { margin-bottom:20px; }
+        .course-detail-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; padding-bottom:16px; border-bottom:1px solid #eef0f6; }
+        .course-detail-title { display:flex; align-items:center; gap:12px; }
+        .course-detail-title h3 { margin:0; font-size:1.4rem; color:#2a2e3b; }
+        .course-badge { background:linear-gradient(135deg, #10b981 0%, #059669 100%); color:#fff; padding:4px 12px; border-radius:20px; font-size:0.8rem; font-weight:700; }
+        .course-info-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:16px; margin-bottom:24px; }
+        .course-info-item { background:#f0fdf4; padding:16px; border-radius:12px; border:1px solid #bbf7d0; }
+        .course-actions { display:flex; gap:12px; margin-bottom:0; }
+        .start-course-btn { background:#059669; color:#fff; border:none; padding:12px 24px; border-radius:10px; font-weight:700; cursor:pointer; }
+        .start-course-btn:hover { background:#047857; }
+        .course-details-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(300px, 1fr)); gap:20px; margin-bottom:0; }
+        
+        /* Progress Overview */
+        .progress-stats { display:grid; grid-template-columns:repeat(auto-fit, minmax(120px, 1fr)); gap:16px; }
+        .stat-item { text-align:center; padding:12px; background:#f8fafc; border-radius:8px; }
+        .stat-label { font-size:0.85rem; color:#6b7280; margin-bottom:4px; }
+        .stat-value { font-size:1.5rem; font-weight:700; color:#374151; }
+        
+        /* Goals & Targets */
+        .goals-container { display:flex; flex-direction:column; gap:16px; }
+        .goal-item { display:flex; flex-direction:column; gap:8px; }
+        .goal-item label { font-weight:600; color:#374151; font-size:0.9rem; }
+        .goal-input { padding:8px 12px; border:1px solid #d1d5db; border-radius:6px; font-size:0.9rem; }
+        .save-goals-btn { background:#667eea; color:#fff; border:none; padding:10px 20px; border-radius:6px; font-weight:600; cursor:pointer; }
+        .save-goals-btn:hover { background:#5a67d8; }
+        
+        /* Progress Settings */
+        .progress-settings-container { display:flex; flex-direction:column; gap:16px; }
+        .progress-item { display:flex; flex-direction:column; gap:8px; }
+        .progress-item label { font-weight:600; color:#374151; font-size:0.9rem; }
+        .progress-input { padding:8px 12px; border:1px solid #d1d5db; border-radius:6px; font-size:0.9rem; }
+        .update-progress-btn { background:#10b981; color:#fff; border:none; padding:10px 20px; border-radius:6px; font-weight:600; cursor:pointer; }
+        .update-progress-btn:hover { background:#059669; }
+        
+        /* Reminders */
+        .reminder-settings { display:flex; flex-direction:column; gap:16px; }
+        .reminder-item { display:flex; flex-direction:column; gap:8px; }
+        .reminder-item label { font-weight:600; color:#374151; font-size:0.9rem; }
+        .time-input { padding:8px 12px; border:1px solid #d1d5db; border-radius:6px; font-size:0.9rem; }
+        .day-select { padding:8px 12px; border:1px solid #d1d5db; border-radius:6px; font-size:0.9rem; }
+        .set-reminders-btn { background:#f59e0b; color:#fff; border:none; padding:10px 20px; border-radius:6px; font-weight:600; cursor:pointer; }
+        .set-reminders-btn:hover { background:#d97706; }
+        
+        /* Analytics */
+        .analytics-stats { display:flex; flex-direction:column; gap:12px; }
+        .analytics-item { display:flex; align-items:center; gap:12px; padding:12px; background:#f8fafc; border-radius:8px; }
+        .analytics-icon { font-size:24px; }
+        .analytics-content { flex:1; }
+        .analytics-label { font-size:0.85rem; color:#6b7280; margin-bottom:2px; }
+        .analytics-value { font-weight:700; color:#374151; }
+        
+        /* Analytics Settings */
+        .analytics-settings-container { display:flex; flex-direction:column; gap:16px; }
+        .analytics-setting-item { display:flex; flex-direction:column; gap:8px; }
+        .analytics-setting-item label { font-weight:600; color:#374151; font-size:0.9rem; }
+        .analytics-input { padding:8px 12px; border:1px solid #d1d5db; border-radius:6px; font-size:0.9rem; }
+        .save-analytics-btn { background:#8b5cf6; color:#fff; border:none; padding:10px 20px; border-radius:6px; font-weight:600; cursor:pointer; }
+        .save-analytics-btn:hover { background:#7c3aed; }
+        
+        /* Recommendations */
+        .recommendations-list { display:flex; flex-direction:column; gap:12px; }
+        .recommendation-item { display:flex; align-items:center; gap:12px; padding:12px; background:#f8fafc; border-radius:8px; border:1px solid #e2e8f0; }
+        .rec-icon { font-size:20px; }
+        .rec-content { flex:1; }
+        .rec-title { font-weight:600; color:#374151; margin-bottom:2px; }
+        .rec-desc { font-size:0.85rem; color:#6b7280; }
+        .rec-btn { background:#667eea; color:#fff; border:none; padding:6px 12px; border-radius:4px; font-size:0.8rem; cursor:pointer; }
+        .rec-btn:hover { background:#5a67d8; }
+        
+        /* Mobile Responsive */
+        @media (max-width: 1200px) {
+            .trials-main-layout { 
+                grid-template-columns: 1fr; 
+            }
+            .trial-right-content { 
+                display: grid !important; 
+                grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); 
+                gap: 20px; 
+            }
+            .reservations-main-layout { 
+                grid-template-columns: 1fr; 
+            }
+            .reservation-right-content { 
+                display: grid !important; 
+                grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); 
+                gap: 20px; 
+            }
+            .courses-main-layout { 
+                grid-template-columns: 1fr; 
+            }
+            .course-right-content { 
+                display: grid !important; 
+                grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); 
+                gap: 20px; 
+            }
+        }
+        @media (max-width: 900px) {
+            :root { --sb-w: 0px; }
+            .dash-hamburger { display:flex; }
+            .dash-sidebar {
+                display:block; width: 260px; transform: translateX(-100%); transition: transform 0.25s ease; box-shadow: 0 0 0 rgba(0,0,0,0);
+            }
+            .dash-sidebar.open { transform: translateX(0); box-shadow: 6px 0 16px rgba(0,0,0,0.08); }
+            .dash-main { margin-left:0; }
+        }
+    </style>
+</head>
+<body>
+    <nav class="dash-navbar">
+        <div class="dash-brand">
+            <button id="dashHamburger" class="dash-hamburger" aria-label="Open menu">≡</button>
+            <span>SpellVoc</span>
+        </div>
+        <div class="dash-userarea">
+            <div class="dash-avatar" id="dashAvatar">U</div>
+            <div class="dash-username" id="dashUserName">User</div>
+            <button id="logoutBtn" class="power-btn">⏻</button>
+            <div class="dash-email-tooltip" id="dashEmailTip">user@example.com</div>
+        </div>
+    </nav>
+
+    <div class="dash-shell">
+        <aside class="dash-sidebar" id="dashSidebar">
+            <a href="#overview">Dashboard</a>
+            <a href="#trials">My Trials</a>
+            <a href="#reservations">Reservations</a>
+            <a href="#courses">Courses</a>
+        </aside>
+        <main class="dash-main">
+            <div class="ov-layout" id="overviewGrid" style="margin-bottom: 16px; display:none;">
+                <div class="ov-left">
+                <div class="ov-hero card">
+                    <div>
+                        <h3>Welcome back, <span id="ovWelcomeName">User</span>!</h3>
+                        <p>Pick up where you left off or explore new courses.</p>
+                    </div>
+                    <div class="welcome-avatar-container">
+                        <div class="welcome-avatar" id="welcomeAvatar">👤</div>
+                    </div>
+                </div>
+                <div class="ov-cols">
+                    <div class="card">
+                        <div class="kpi" style="--val: 85%">
+                            <div class="ring"><span>85%</span></div>
+                            <div class="meta"><div class="title">Today's goal</div><div class="muted">Your goal • Progress</div></div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="kpi" style="--val: 50%">
+                            <div class="ring"><span>50%</span></div>
+                            <div class="meta"><div class="title">Overall score</div><div class="muted">All courses • General</div></div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="meta" style="margin-bottom:10px; font-weight:800;">Your courses</div>
+                        <div id="ovCourses"></div>
+                    </div>
+                    <div class="card">
+                        <div class="muted">Trials</div>
+                        <div id="ovTrialsCount" style="font-size: 28px; font-weight: 800;">0</div>
+                        <div id="ovTrialsRecent" class="muted">—</div>
+                        <div class="ov-list" id="ovTrialsList"></div>
+                    </div>
+                    <div class="card">
+                        <div class="muted">Reservations</div>
+                        <div id="ovReservCount" style="font-size: 28px; font-weight: 800;">0</div>
+                        <div id="ovReservRecent" class="muted">—</div>
+                        <div class="ov-list" id="ovReservList"></div>
+                    </div>
+                </div>
+                </div>
+                <div class="ov-right">
+                    <div class="card">
+                        <div class="calendar">
+                            <div class="cal-head">
+                                <button id="calPrev" class="power-btn" style="background:#4b5563; box-shadow:none;">‹</button>
+                                <span id="calMonth" style="cursor:pointer;">Month YYYY</span>
+                                <button id="calNext" class="power-btn" style="background:#4b5563; box-shadow:none;">›</button>
+                                <div class="cal-pickers" id="calPickers">
+                                    <select id="calYear"></select>
+                                    <select id="calMon"></select>
+                                    <button id="calApply" class="power-btn" style="background:#4f46e5; box-shadow:none; width:auto; padding:0 10px;">Go</button>
+                                </div>
+                            </div>
+                            <div class="cal-week"><span>S</span><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span></div>
+                            <div class="cal-grid" id="calGrid"></div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="circle-wrap">
+                            <div class="pie" style="--val:85%">
+                                <div class="ring"><span>85%</span></div>
+                                <div class="muted">Today's goal</div>
+                            </div>
+                            <div class="pie" style="--val:50%">
+                                <div class="ring" style="background: conic-gradient(#4f46e5 var(--val,50%), #e5e7eb 0)"><span>50%</span></div>
+                                <div class="muted">Overall score</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Hidden raw JSON profile block: completely removed from flow -->
+            <div class="card" style="display:none; height:0; padding:0; margin:0; border:none; box-shadow:none;">
+                <h3 style="display:none;">User Profile</h3>
+                <pre id="profileJson" style="display:none;">{}</pre>
+            </div>
+            <h2 id="trials" style="margin-top:24px; display:none;">My Trials</h2>
+            
+            <!-- Trials Section Layout -->
+            <div id="trialsSectionLayout" style="display:none; margin-top:16px;">
+                <div class="trials-main-layout">
+                    <!-- Left Side - Trials List and Details -->
+                    <div class="trials-left-side">
+                        <div class="card" id="trialsCard">
+                <div id="trialsList" class="muted">Loading...</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Right Side - Notes and Features (Always Visible) -->
+                    <div class="trial-right-content" id="trialRightContent">
+                        <!-- Notes Card -->
+                        <div class="card trial-notes-card">
+                            <h4>📝 My Notes</h4>
+                            <div class="notes-container">
+                                <textarea id="trialNotes" placeholder="Add your personal notes about this course..." rows="4"></textarea>
+                                <div class="notes-actions">
+                                    <button id="saveNotesBtn" class="save-notes-btn">Save Notes</button>
+                                    <span id="notesStatus" class="notes-status"></span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Notes History Card -->
+                        <div class="card trial-notes-history-card">
+                            <h4>📚 Notes History</h4>
+                            <div class="notes-history-container" id="notesHistoryContainer">
+                                <div class="no-notes">No saved notes yet</div>
+                            </div>
+                        </div>
+                        
+                        <!-- Study Reminder Card -->
+                        <div class="card trial-feature-card">
+                            <div class="feature-header">
+                                <div class="feature-icon">⏰</div>
+                                <h4>Study Reminder</h4>
+                            </div>
+                            <p class="feature-desc">Set daily study reminders to stay on track with your learning goals.</p>
+                            <div class="reminder-settings" id="reminderSettings" style="display:none;">
+                                <input type="time" id="reminderTime" class="time-input">
+                                <div class="reminder-status" id="reminderStatus"></div>
+                            </div>
+                            <button class="feature-btn" id="setReminderBtn">Set Reminder</button>
+                        </div>
+                        
+                        <!-- Progress Tracking Card -->
+                        <div class="card trial-feature-card">
+                            <div class="feature-header">
+                                <div class="feature-icon">📊</div>
+                                <h4>Progress Tracking</h4>
+                            </div>
+                            <p class="feature-desc">Track your learning journey and celebrate your achievements.</p>
+                            <div class="progress-details" id="progressDetails" style="display:none;">
+                                <div class="progress-metric">
+                                    <span class="metric-label">Study Time:</span>
+                                    <span class="metric-value" id="studyTime">0 hours</span>
+                                </div>
+                                <div class="progress-metric">
+                                    <span class="metric-label">Lessons Completed:</span>
+                                    <span class="metric-value" id="lessonsCompleted">0/5</span>
+                                </div>
+                                <div class="progress-metric">
+                                    <span class="metric-label">Streak:</span>
+                                    <span class="metric-value" id="studyStreak">0 days</span>
+                                </div>
+                            </div>
+                            <button class="feature-btn" id="viewProgressBtn">View Progress</button>
+                        </div>
+                        
+                        <!-- Ask Questions Card -->
+                        <div class="card trial-feature-card">
+                            <div class="feature-header">
+                                <div class="feature-icon">💬</div>
+                                <h4>Ask Questions</h4>
+                            </div>
+                            <p class="feature-desc">Get help from instructors and connect with fellow learners.</p>
+                            <div class="question-form" id="questionForm" style="display:none;">
+                                <textarea id="questionText" placeholder="Type your question here..." rows="3"></textarea>
+                                <button id="submitQuestionBtn" class="submit-question-btn">Submit Question</button>
+                            </div>
+                            <button class="feature-btn" id="askQuestionBtn">Ask Question</button>
+                        </div>
+                        
+                        <!-- Question History Card -->
+                        <div class="card trial-question-history-card">
+                            <h4>📝 Question History</h4>
+                            <div class="question-history-container" id="questionHistoryContainer">
+                                <div class="no-questions">No questions asked yet</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <h2 id="reservations" style="margin-top:24px; display:none;">Reservations</h2>
+            
+            <h2 id="courses" style="margin-top:24px; display:none;">My Courses</h2>
+            
+            <!-- Courses Section Layout -->
+            <div id="coursesSectionLayout" style="display:none; margin-top:16px;">
+                <div class="courses-main-layout">
+                    <!-- Left Side - Courses List and Details -->
+                    <div class="courses-left-side">
+                        <div class="card" id="coursesCard">
+                            <div id="coursesList" class="muted">Loading...</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Right Side - Course Management Tools -->
+                    <div class="course-right-content" id="courseRightContent">
+                        <!-- Course Progress Overview -->
+                        <div class="card course-progress-overview">
+                            <h4>📊 Course Progress Overview</h4>
+                            <div class="progress-stats" id="courseProgressStats">
+                                <div class="stat-item">
+                                    <div class="stat-label">Course Progress</div>
+                                    <div class="stat-value" id="selectedCourseProgress">0%</div>
+                                </div>
+                                <div class="stat-item">
+                                    <div class="stat-label">Today's Goal</div>
+                                    <div class="stat-value" id="selectedCourseGoal">0%</div>
+                                </div>
+                                <div class="stat-item">
+                                    <div class="stat-label">Study Time</div>
+                                    <div class="stat-value" id="selectedCourseStudyTime">0h</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Overall Daily Goals & Targets -->
+                        <div class="card course-goals-card">
+                            <h4>🎯 Daily Goals & Targets</h4>
+                            <div class="goals-container">
+                                <div class="goal-item">
+                                    <label>Daily Study Time (hours)</label>
+                                    <input type="number" id="overallDailyStudyGoal" min="0" max="12" value="2" class="goal-input">
+                                </div>
+                                <div class="goal-item">
+                                    <label>Weekly Target Score</label>
+                                    <input type="number" id="overallWeeklyScoreGoal" min="0" max="100" value="80" class="goal-input">
+                                </div>
+                                <div class="goal-item">
+                                    <label>Monthly Course Completion Goal</label>
+                                    <input type="number" id="overallMonthlyGoal" min="0" max="100" value="5" class="goal-input">
+                                </div>
+                                <button id="saveOverallGoalsBtn" class="save-goals-btn">Save Overall Goals</button>
+                            </div>
+                        </div>
+                        
+                        <!-- Individual Course Progress Settings -->
+                        <div class="card course-progress-settings-card">
+                            <h4>📊 Set Course Progress</h4>
+                            <div class="progress-settings-container">
+                                <div class="progress-item">
+                                    <label>Course Progress (%)</label>
+                                    <input type="number" id="courseProgressInput" min="0" max="100" value="0" class="progress-input">
+                                </div>
+                                <div class="progress-item">
+                                    <label>Study Time (hours)</label>
+                                    <input type="number" id="courseStudyTimeInput" min="0" max="100" value="0" class="progress-input">
+                                </div>
+                                <div class="progress-item">
+                                    <label>Lessons Completed</label>
+                                    <input type="number" id="courseLessonsInput" min="0" max="50" value="0" class="progress-input">
+                                </div>
+                                <button id="updateCourseProgressBtn" class="update-progress-btn">Update Course Progress</button>
+                            </div>
+                        </div>
+                        
+                        <!-- Individual Course Reminders -->
+                        <div class="card course-reminders-card">
+                            <h4>⏰ Course Reminders</h4>
+                            <div class="reminder-settings">
+                                <div class="reminder-item">
+                                    <label>Study Reminder Time</label>
+                                    <input type="time" id="courseReminderTime" class="time-input">
+                                </div>
+                                <div class="reminder-item">
+                                    <label>Weekly Progress Check</label>
+                                    <select id="weeklyCheckDay" class="day-select">
+                                        <option value="monday">Monday</option>
+                                        <option value="tuesday">Tuesday</option>
+                                        <option value="wednesday">Wednesday</option>
+                                        <option value="thursday">Thursday</option>
+                                        <option value="friday">Friday</option>
+                                        <option value="saturday">Saturday</option>
+                                        <option value="sunday">Sunday</option>
+                                    </select>
+                                </div>
+                                <button id="setCourseRemindersBtn" class="set-reminders-btn">Set Course Reminders</button>
+                            </div>
+                        </div>
+                        
+                        <!-- Set Learning Analytics -->
+                        <div class="card course-analytics-settings-card">
+                            <h4>📈 Set Learning Analytics</h4>
+                            <div class="analytics-settings-container">
+                                <div class="analytics-setting-item">
+                                    <label>Study Streak (days)</label>
+                                    <input type="number" id="setStudyStreak" min="0" max="365" value="0" class="analytics-input">
+                                </div>
+                                <div class="analytics-setting-item">
+                                    <label>Total Study Time (hours)</label>
+                                    <input type="number" id="setTotalStudyTime" min="0" max="1000" value="0" class="analytics-input">
+                                </div>
+                                <div class="analytics-setting-item">
+                                    <label>Courses Completed</label>
+                                    <input type="number" id="setCoursesCompleted" min="0" max="100" value="0" class="analytics-input">
+                                </div>
+                                <div class="analytics-setting-item">
+                                    <label>Average Rating</label>
+                                    <input type="number" id="setAverageRating" min="0" max="5" step="0.1" value="0.0" class="analytics-input">
+                                </div>
+                                <button id="saveAnalyticsBtn" class="save-analytics-btn">Save Analytics</button>
+                            </div>
+                        </div>
+                        
+                        <!-- Course Analytics Display -->
+                        <div class="card course-analytics-card">
+                            <h4>📈 Learning Analytics</h4>
+                            <div class="analytics-stats">
+                                <div class="analytics-item">
+                                    <div class="analytics-icon">🔥</div>
+                                    <div class="analytics-content">
+                                        <div class="analytics-label">Study Streak</div>
+                                        <div class="analytics-value" id="studyStreak">0 days</div>
+                                    </div>
+                                </div>
+                                <div class="analytics-item">
+                                    <div class="analytics-icon">⏱️</div>
+                                    <div class="analytics-content">
+                                        <div class="analytics-label">Total Study Time</div>
+                                        <div class="analytics-value" id="totalStudyTime">0 hours</div>
+                                    </div>
+                                </div>
+                                <div class="analytics-item">
+                                    <div class="analytics-icon">🏆</div>
+                                    <div class="analytics-content">
+                                        <div class="analytics-label">Courses Completed</div>
+                                        <div class="analytics-value" id="coursesCompleted">0</div>
+                                    </div>
+                                </div>
+                                <div class="analytics-item">
+                                    <div class="analytics-icon">⭐</div>
+                                    <div class="analytics-content">
+                                        <div class="analytics-label">Average Rating</div>
+                                        <div class="analytics-value" id="averageRating">0.0</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Course Recommendations -->
+                        <div class="card course-recommendations-card">
+                            <h4>💡 Course Recommendations</h4>
+                            <div class="recommendations-list" id="recommendationsList">
+                                <div class="recommendation-item">
+                                    <div class="rec-icon">📚</div>
+                                    <div class="rec-content">
+                                        <div class="rec-title">Advanced Grammar</div>
+                                        <div class="rec-desc">Based on your progress</div>
+                                    </div>
+                                    <button class="rec-btn" data-course-title="Advanced Grammar" data-course-icon="📚">Start</button>
+                                </div>
+                                <div class="recommendation-item">
+                                    <div class="rec-icon">🎯</div>
+                                    <div class="rec-content">
+                                        <div class="rec-title">Business English</div>
+                                        <div class="rec-desc">Popular choice</div>
+                                    </div>
+                                    <button class="rec-btn" data-course-title="Business English" data-course-icon="🎯">Start</button>
+                                </div>
+                                <div class="recommendation-item">
+                                    <div class="rec-icon">💬</div>
+                                    <div class="rec-content">
+                                        <div class="rec-title">Conversation Skills</div>
+                                        <div class="rec-desc">Improve speaking</div>
+                                    </div>
+                                    <button class="rec-btn" data-course-title="Conversation Skills" data-course-icon="💬">Start</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Reservations Section Layout -->
+            <div id="reservationsSectionLayout" style="display:none; margin-top:16px;">
+                <div class="reservations-main-layout">
+                    <!-- Left Side - Reservations List and Details -->
+                    <div class="reservations-left-side">
+                        <div class="card" id="reservationsCard">
+                <div id="reservationsList" class="muted">Loading...</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Right Side - Notes and Features (Always Visible) -->
+                    <div class="reservation-right-content" id="reservationRightContent">
+                        <!-- Notes Card -->
+                        <div class="card reservation-notes-card">
+                            <h4>📝 My Notes</h4>
+                            <div class="notes-container">
+                                <textarea id="reservationNotes" placeholder="Add your personal notes about this plan..." rows="4"></textarea>
+                                <div class="notes-actions">
+                                    <button id="saveReservationNotesBtn" class="save-notes-btn">Save Notes</button>
+                                    <span id="reservationNotesStatus" class="notes-status"></span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Notes History Card -->
+                        <div class="card reservation-notes-history-card">
+                            <h4>📚 Notes History</h4>
+                            <div class="notes-history-container" id="reservationNotesHistoryContainer">
+                                <div class="no-notes">No saved notes yet</div>
+                            </div>
+                        </div>
+                        
+                        <!-- Study Reminder Card -->
+                        <div class="card reservation-feature-card">
+                            <div class="feature-header">
+                                <div class="feature-icon">⏰</div>
+                                <h4>Study Reminder</h4>
+                            </div>
+                            <p class="feature-desc">Set daily study reminders to stay on track with your learning goals.</p>
+                            <div class="reminder-settings" id="reservationReminderSettings" style="display:none;">
+                                <input type="time" id="reservationReminderTime" class="time-input">
+                                <div class="reminder-status" id="reservationReminderStatus"></div>
+                            </div>
+                            <button class="feature-btn" id="setReservationReminderBtn">Set Reminder</button>
+                        </div>
+                        
+                        <!-- Progress Tracking Card -->
+                        <div class="card reservation-feature-card">
+                            <div class="feature-header">
+                                <div class="feature-icon">📊</div>
+                                <h4>Progress Tracking</h4>
+                            </div>
+                            <p class="feature-desc">Track your learning journey and celebrate your achievements.</p>
+                            <div class="progress-details" id="reservationProgressDetails" style="display:none;">
+                                <div class="progress-metric">
+                                    <span class="metric-label">Study Time:</span>
+                                    <span class="metric-value" id="reservationStudyTime">0 hours</span>
+                                </div>
+                                <div class="progress-metric">
+                                    <span class="metric-label">Lessons Completed:</span>
+                                    <span class="metric-value" id="reservationLessonsCompleted">0/10</span>
+                                </div>
+                                <div class="progress-metric">
+                                    <span class="metric-label">Streak:</span>
+                                    <span class="metric-value" id="reservationStudyStreak">0 days</span>
+                                </div>
+                            </div>
+                            <button class="feature-btn" id="viewReservationProgressBtn">View Progress</button>
+                        </div>
+                        
+                        <!-- Ask Questions Card -->
+                        <div class="card reservation-feature-card">
+                            <div class="feature-header">
+                                <div class="feature-icon">💬</div>
+                                <h4>Ask Questions</h4>
+                            </div>
+                            <p class="feature-desc">Get help from instructors and connect with fellow learners.</p>
+                            <div class="question-form" id="reservationQuestionForm" style="display:none;">
+                                <textarea id="reservationQuestionText" placeholder="Type your question here..." rows="3"></textarea>
+                                <button id="submitReservationQuestionBtn" class="submit-question-btn">Submit Question</button>
+                            </div>
+                            <button class="feature-btn" id="askReservationQuestionBtn">Ask Question</button>
+                        </div>
+                        
+                        <!-- Question History Card -->
+                        <div class="card reservation-question-history-card">
+                            <h4>📝 Question History</h4>
+                            <div class="question-history-container" id="reservationQuestionHistoryContainer">
+                                <div class="no-questions">No questions asked yet</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+    const API_BASE = 'http://localhost:4000';
+    
+    // Global variables to track active items
+    let activeTrialIndex = null;
+    let activeReservationIndex = null;
+    let activeCourseIndex = null;
+    async function api(path, opts={}){
+        const res = await fetch(API_BASE + path, { credentials: 'include', headers: { 'Content-Type':'application/json' }, ...opts });
+        let data = null; try { data = await res.json(); } catch(_){ }
+        if (!res.ok) throw new Error((data && (data.error||data.message)) || ('HTTP '+res.status));
+        return data;
+    }
+
+    async function getWithRefresh(path, opts){
+        try { return await api(path, opts); }
+        catch(e){
+            if (String(e.message).includes('401') || String(e.message).includes('Unauthorized')) {
+                // try {
+                //     console.log('[DASH][API] POST /api/auth/refresh');
+                //     await api('/api/auth/refresh', { method: 'POST' });
+                //     console.log('[DASH][API] retry /api/auth/me');
+                //     return await api('/api/auth/me');
+                // } catch (e2) {
+                //     throw e2;
+                // }
+                try { await api('/api/auth/refresh', { method:'POST' }); return await api(path, opts); } catch(e2){ throw e2; }
+            }
+            throw e;
+        }
+    }
+
+    // Minimal sync for pre-login stored trials
+    function getPendingTrials(){
+        try { return JSON.parse(localStorage.getItem('pending_trials') || '[]'); } catch { return []; }
+    }
+    function setPendingTrials(list){
+        localStorage.setItem('pending_trials', JSON.stringify(list));
+    }
+    async function syncPendingTrials(){
+        const trials = getPendingTrials();
+        if (!trials.length) return;
+        const remaining = [];
+        for (const t of trials){
+            const title = (t && t.courseTitle) || t;
+            if (!title) continue;
+            try {
+                await getWithRefresh('/api/trials', { method:'POST', body: JSON.stringify({ courseTitle: title }) });
+            } catch(e){
+                remaining.push(t);
+            }
+        }
+        setPendingTrials(remaining);
+    }
+
+    function initials(name){
+        if (!name) return 'U';
+        const parts = name.trim().split(/\s+/).slice(0,2);
+        return parts.map(p=>p[0]?.toUpperCase()||'').join('') || 'U';
+    }
+
+    function getGenderAvatar(gender, name) {
+        if (gender) {
+            return gender.toLowerCase() === 'male' ? '👨' : '👩';
+        }
+        // Fallback: try to guess from name (simple heuristic)
+        if (name) {
+            const commonMaleNames = ['john', 'mike', 'david', 'robert', 'james', 'william', 'richard', 'charles', 'thomas', 'christopher', 'daniel', 'matthew', 'anthony', 'mark', 'donald', 'steven', 'paul', 'andrew', 'joshua', 'kenneth', 'kevin', 'brian', 'george', 'edward', 'ronald', 'timothy', 'jason', 'jeffrey', 'ryan', 'jacob', 'gary', 'nicholas', 'eric', 'jonathan', 'stephen', 'larry', 'justin', 'scott', 'brandon', 'benjamin', 'samuel', 'gregory', 'frank', 'raymond', 'alexander', 'patrick', 'jack', 'dennis', 'jerry', 'tyler', 'aaron', 'jose', 'henry', 'douglas', 'adam', 'peter', 'nathan', 'zachary', 'kyle', 'walter', 'harold', 'carl', 'jeremy', 'arthur', 'lawrence', 'sean', 'christian', 'ethan', 'austin', 'joe', 'albert', 'jesse', 'willie', 'billy', 'bryan', 'bruce', 'noah', 'jordan', 'dylan', 'alan', 'ralph', 'gabriel', 'roy', 'juan', 'wayne', 'eugene', 'louis', 'philip', 'bobby', 'johnny', 'tony'];
+            const commonFemaleNames = ['mary', 'patricia', 'jennifer', 'linda', 'elizabeth', 'barbara', 'susan', 'jessica', 'sarah', 'karen', 'nancy', 'lisa', 'betty', 'helen', 'sandra', 'donna', 'carol', 'ruth', 'sharon', 'michelle', 'laura', 'sarah', 'kimberly', 'deborah', 'dorothy', 'lisa', 'nancy', 'karen', 'betty', 'helen', 'sandra', 'donna', 'carol', 'ruth', 'sharon', 'michelle', 'laura', 'sarah', 'kimberly', 'deborah', 'dorothy', 'amy', 'angela', 'brenda', 'emma', 'olivia', 'cynthia', 'marie', 'janet', 'catherine', 'frances', 'christine', 'samantha', 'debra', 'rachel', 'carolyn', 'janet', 'virginia', 'maria', 'heather', 'diane', 'julie', 'joyce', 'victoria', 'kelly', 'christina', 'joan', 'evelyn', 'judith', 'megan', 'cheryl', 'andrea', 'hannah', 'jacqueline', 'martha', 'gloria', 'teresa', 'sara', 'janice', 'julia', 'marie', 'madison', 'grace', 'judy', 'theresa', 'beverly', 'denise', 'marilyn', 'amber', 'danielle', 'rose', 'brittany', 'diana', 'abigail', 'jane', 'lori', 'alexis', 'kayla', 'tiffany'];
+            
+            const firstName = name.toLowerCase().split(' ')[0];
+            if (commonMaleNames.includes(firstName)) return '👨';
+            if (commonFemaleNames.includes(firstName)) return '👩';
+        }
+        return '👤'; // Default neutral avatar
+    }
+
+    function renderTrials(trials){
+        const el = document.getElementById('trialsList');
+        if (!trials || trials.length === 0) { el.textContent = 'No trials yet.'; return; }
+        el.classList.remove('muted');
+        el.dataset.raw = JSON.stringify(trials);
+        el.innerHTML = trials.map((t, index) => {
+            const title = t.courseId?.title || t.courseTitle || 'Course';
+            const when = new Date(t.createdAt || t.registeredAt).toLocaleString();
+            const enrolledDate = new Date(t.createdAt || t.registeredAt).toLocaleDateString();
+            return `
+                <div class="trial-item-container">
+                    <div class="trial-item" data-trial-index="${index}" style="display:flex; justify-content:space-between; padding:12px; border-bottom:1px dashed #e6e6e6; cursor:pointer; border-radius:8px; transition:background 0.2s ease;">
+                <div><span class="pill">Trial</span> <strong>${title}</strong></div>
+                <div class="muted">${when}</div>
+                    </div>
+                    <div class="trial-detail-section" id="trialDetailSection-${index}" style="display:none;">
+                        <div class="trial-detail-layout">
+                            <!-- Main Course Info Card -->
+                            <div class="card trial-main-card">
+                                <div class="trial-detail-header">
+                                    <div class="trial-detail-title">
+                                        <h3 class="trial-detail-title-text">${title}</h3>
+                                        <span class="trial-badge">Trial Course</span>
+                                    </div>
+                                    <button class="close-trial-detail-btn" data-trial-index="${index}">×</button>
+                                </div>
+                                
+                                <div class="trial-info-grid">
+                                    <div class="trial-info-item">
+                                        <div class="info-label">Enrolled Date</div>
+                                        <div class="info-value trial-enrolled-date">${enrolledDate}</div>
+                                    </div>
+                                    <div class="trial-info-item">
+                                        <div class="info-label">Duration</div>
+                                        <div class="info-value">7 Days Trial</div>
+                                    </div>
+                                    <div class="trial-info-item">
+                                        <div class="info-label">Status</div>
+                                        <div class="info-value trial-status">Active</div>
+                                    </div>
+                                    <div class="trial-info-item">
+                                        <div class="info-label">Progress</div>
+                                        <div class="info-value">
+                                            <div class="progress-bar">
+                                                <div class="progress-fill trial-progress" style="width: 0%"></div>
+                                            </div>
+                                            <span class="trial-progress-text">0%</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="trial-description">
+                                    <h4>About This Course</h4>
+                                    <p>This is a comprehensive trial course designed to help you learn and improve your skills.</p>
+                                </div>
+                                
+                                <div class="trial-actions">
+                                    <button class="learn-more-trial-btn" data-trial-index="${index}">Learn More</button>
+                                </div>
+                            </div>
+                            
+                            <!-- Course Details Grid -->
+                            <div class="trial-details-grid" id="trialDetailsExpanded-${index}" style="display:none;">
+                                <!-- Curriculum Card -->
+                                <div class="card trial-detail-card">
+                                    <h4>📚 Course Curriculum</h4>
+                                    <div class="curriculum-list">
+                                        <div class="curriculum-item">
+                                            <div class="curriculum-icon">📚</div>
+                                            <div class="curriculum-content">
+                                                <div class="curriculum-title">Introduction to Course</div>
+                                                <div class="curriculum-duration">15 minutes</div>
+                                            </div>
+                                        </div>
+                                        <div class="curriculum-item">
+                                            <div class="curriculum-icon">🎯</div>
+                                            <div class="curriculum-content">
+                                                <div class="curriculum-title">Core Concepts</div>
+                                                <div class="curriculum-duration">30 minutes</div>
+                                            </div>
+                                        </div>
+                                        <div class="curriculum-item">
+                                            <div class="curriculum-icon">💡</div>
+                                            <div class="curriculum-content">
+                                                <div class="curriculum-title">Practical Exercises</div>
+                                                <div class="curriculum-duration">45 minutes</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Learning Outcomes Card -->
+                                <div class="card trial-detail-card">
+                                    <h4>🎯 What You'll Learn</h4>
+                                    <ul class="learning-points">
+                                        <li>Master fundamental concepts</li>
+                                        <li>Apply knowledge in real scenarios</li>
+                                        <li>Build confidence through practice</li>
+                                        <li>Get personalized feedback</li>
+                                    </ul>
+                                </div>
+                                
+                                <!-- Prerequisites Card -->
+                                <div class="card trial-detail-card">
+                                    <h4>📋 Prerequisites</h4>
+                                    <div class="prerequisites">
+                                        <span class="prereq-item">Basic English</span>
+                                        <span class="prereq-item">Internet Connection</span>
+                                        <span class="prereq-item">Motivation to Learn</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+        
+        // Add click handlers to trial items
+        el.querySelectorAll('.trial-item').forEach(item => {
+            item.addEventListener('click', () => {
+                const index = parseInt(item.dataset.trialIndex);
+                toggleTrialDetail(index);
+            });
+            item.addEventListener('mouseenter', () => {
+                item.style.background = '#f8fafc';
+            });
+            item.addEventListener('mouseleave', () => {
+                item.style.background = 'transparent';
+            });
+        });
+        
+        // Add click handlers to close buttons
+        el.querySelectorAll('.close-trial-detail-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const index = parseInt(btn.dataset.trialIndex);
+                hideTrialDetail(index);
+            });
+        });
+        
+        // Add click handlers to learn more buttons
+        el.querySelectorAll('.learn-more-trial-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const index = parseInt(btn.dataset.trialIndex);
+                toggleTrialDetailsExpanded(index);
+            });
+        });
+    }
+
+    // Default courses data
+    const defaultCourses = [
+        {
+            id: 1,
+            title: "Business English Fundamentals",
+            difficulty: "Intermediate",
+            duration: "8 weeks",
+            progress: 65,
+            rating: 4.5,
+            icon: "💼",
+            description: "Master professional communication skills for the workplace.",
+            instructor: "Sarah Johnson",
+            lessons: 24,
+            completedLessons: 16,
+            startDate: "2024-01-15",
+            category: "Business"
+        },
+        {
+            id: 2,
+            title: "Advanced Grammar Mastery",
+            difficulty: "Advanced",
+            duration: "6 weeks",
+            progress: 30,
+            rating: 4.8,
+            icon: "📚",
+            description: "Deep dive into complex grammar structures and usage.",
+            instructor: "Michael Chen",
+            lessons: 18,
+            completedLessons: 5,
+            startDate: "2024-02-01",
+            category: "Grammar"
+        },
+        {
+            id: 3,
+            title: "Conversational English",
+            difficulty: "Beginner",
+            duration: "4 weeks",
+            progress: 90,
+            rating: 4.2,
+            icon: "💬",
+            description: "Build confidence in everyday conversations.",
+            instructor: "Emma Wilson",
+            lessons: 12,
+            completedLessons: 11,
+            startDate: "2024-01-10",
+            category: "Conversation"
+        },
+        {
+            id: 4,
+            title: "IELTS Preparation",
+            difficulty: "Advanced",
+            duration: "12 weeks",
+            progress: 45,
+            rating: 4.7,
+            icon: "🎯",
+            description: "Comprehensive preparation for IELTS exam.",
+            instructor: "David Brown",
+            lessons: 36,
+            completedLessons: 16,
+            startDate: "2024-01-20",
+            category: "Exam Prep"
+        },
+        {
+            id: 5,
+            title: "Creative Writing Workshop",
+            difficulty: "Intermediate",
+            duration: "6 weeks",
+            progress: 20,
+            rating: 4.3,
+            icon: "✍️",
+            description: "Develop your creative writing skills and style.",
+            instructor: "Lisa Anderson",
+            lessons: 15,
+            completedLessons: 3,
+            startDate: "2024-02-15",
+            category: "Writing"
+        }
+    ];
+
+    function renderCourses(courses = defaultCourses){
+        const el = document.getElementById('coursesList');
+        if (!courses || courses.length === 0) { el.textContent = 'No courses available.'; return; }
+        el.classList.remove('muted');
+        
+        // Load saved course progress data
+        const savedCourses = loadSavedCourseProgress(courses);
+        el.dataset.raw = JSON.stringify(savedCourses);
+        el.innerHTML = savedCourses.map((course, index) => {
+            const difficultyColors = {
+                'Beginner': '#10b981',
+                'Intermediate': '#f59e0b', 
+                'Advanced': '#ef4444'
+            };
+            const difficultyColor = difficultyColors[course.difficulty] || '#6b7280';
+            
+            return `
+                <div class="course-item-container">
+                    <div class="course-item" data-course-index="${index}" style="display:flex; justify-content:space-between; align-items:center; padding:16px; border-bottom:1px dashed #e6e6e6; cursor:pointer; border-radius:8px; transition:background 0.2s ease;">
+                        <div class="course-info">
+                            <div class="course-icon">${course.icon}</div>
+                            <div>
+                                <div class="course-title">${course.title}</div>
+                                <div class="course-difficulty" style="color:${difficultyColor};">${course.difficulty} • ${course.duration}</div>
+                            </div>
+                        </div>
+                        <div style="display:flex; align-items:center; gap:16px;">
+                            <div class="course-progress">
+                                <div class="course-progress-bar">
+                                    <div class="course-progress-fill" style="width:${course.progress}%"></div>
+                                </div>
+                                <span style="font-size:0.8rem; color:#6b7280;">${course.progress}%</span>
+                            </div>
+                            <div class="course-rating">
+                                <span class="star">★</span>
+                                <span style="font-size:0.8rem; color:#6b7280;">${course.rating}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="course-detail-section" id="courseDetailSection-${index}" style="display:none;">
+                        <div class="course-detail-layout">
+                            <!-- Main Course Info Card -->
+                            <div class="card course-main-card">
+                                <div class="course-detail-header">
+                                    <div class="course-detail-title">
+                                        <h3 class="course-detail-title-text">${course.title}</h3>
+                                        <span class="course-badge">${course.category}</span>
+                                    </div>
+                                    <button class="close-course-detail-btn" data-course-index="${index}">×</button>
+                                </div>
+                                
+                                <div class="course-info-grid">
+                                    <div class="course-info-item">
+                                        <div class="info-label">Instructor</div>
+                                        <div class="info-value">${course.instructor}</div>
+                                    </div>
+                                    <div class="course-info-item">
+                                        <div class="info-label">Difficulty</div>
+                                        <div class="info-value" style="color:${difficultyColor};">${course.difficulty}</div>
+                                    </div>
+                                    <div class="course-info-item">
+                                        <div class="info-label">Duration</div>
+                                        <div class="info-value">${course.duration}</div>
+                                    </div>
+                                    <div class="course-info-item">
+                                        <div class="info-label">Progress</div>
+                                        <div class="info-value">
+                                            <div class="progress-bar">
+                                                <div class="progress-fill" style="width:${course.progress}%"></div>
+                                            </div>
+                                            <span>${course.progress}%</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="course-description">
+                                    <h4>About This Course</h4>
+                                    <p>${course.description}</p>
+                                </div>
+                                
+                                <div class="course-actions">
+                                    <button class="start-course-btn" data-course-index="${index}">Continue Learning</button>
+                                    <button class="learn-more-course-btn" data-course-index="${index}">Course Details</button>
+                                </div>
+                            </div>
+                            
+                            <!-- Course Details Grid -->
+                            <div class="course-details-grid" id="courseDetailsExpanded-${index}" style="display:none;">
+                                <!-- Course Curriculum Card -->
+                                <div class="card course-detail-card">
+                                    <h4>📚 Course Curriculum</h4>
+                                    <div class="curriculum-list">
+                                        <div class="curriculum-item">
+                                            <div class="curriculum-icon">📖</div>
+                                            <div class="curriculum-content">
+                                                <div class="curriculum-title">Introduction & Overview</div>
+                                                <div class="curriculum-duration">30 minutes</div>
+                                            </div>
+                                        </div>
+                                        <div class="curriculum-item">
+                                            <div class="curriculum-icon">🎯</div>
+                                            <div class="curriculum-content">
+                                                <div class="curriculum-title">Core Concepts</div>
+                                                <div class="curriculum-duration">45 minutes</div>
+                                            </div>
+                                        </div>
+                                        <div class="curriculum-item">
+                                            <div class="curriculum-icon">💡</div>
+                                            <div class="curriculum-content">
+                                                <div class="curriculum-title">Practical Exercises</div>
+                                                <div class="curriculum-duration">60 minutes</div>
+                                            </div>
+                                        </div>
+                                        <div class="curriculum-item">
+                                            <div class="curriculum-icon">📝</div>
+                                            <div class="curriculum-content">
+                                                <div class="curriculum-title">Assessment & Review</div>
+                                                <div class="curriculum-duration">30 minutes</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Learning Outcomes Card -->
+                                <div class="card course-detail-card">
+                                    <h4>🎯 What You'll Learn</h4>
+                                    <ul class="learning-points">
+                                        <li>Master key concepts and principles</li>
+                                        <li>Apply knowledge in real-world scenarios</li>
+                                        <li>Build confidence through practice</li>
+                                        <li>Receive expert feedback and guidance</li>
+                                        <li>Develop advanced skills and techniques</li>
+                                    </ul>
+                                </div>
+                                
+                                <!-- Course Progress Card -->
+                                <div class="card course-detail-card">
+                                    <h4>📊 Your Progress</h4>
+                                    <div class="progress-details">
+                                        <div class="progress-metric">
+                                            <span class="metric-label">Lessons Completed:</span>
+                                            <span class="metric-value">${course.completedLessons}/${course.lessons}</span>
+                                        </div>
+                                        <div class="progress-metric">
+                                            <span class="metric-label">Study Time:</span>
+                                            <span class="metric-value">${Math.floor(course.progress * 0.3)} hours</span>
+                                        </div>
+                                        <div class="progress-metric">
+                                            <span class="metric-label">Current Streak:</span>
+                                            <span class="metric-value">${Math.floor(Math.random() * 7) + 1} days</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+        
+        // Add click handlers to course items
+        el.querySelectorAll('.course-item').forEach(item => {
+            item.addEventListener('click', () => {
+                const index = parseInt(item.dataset.courseIndex);
+                toggleCourseDetail(index);
+            });
+            item.addEventListener('mouseenter', () => {
+                item.style.background = '#f8fafc';
+            });
+            item.addEventListener('mouseleave', () => {
+                item.style.background = 'transparent';
+            });
+        });
+        
+        // Add click handlers to close buttons
+        el.querySelectorAll('.close-course-detail-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const index = parseInt(btn.dataset.courseIndex);
+                hideCourseDetail(index);
+            });
+        });
+        
+        // Add click handlers to learn more buttons
+        el.querySelectorAll('.learn-more-course-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const index = parseInt(btn.dataset.courseIndex);
+                toggleCourseDetailsExpanded(index);
+            });
+        });
+        
+        // Add click handlers to start course buttons
+        el.querySelectorAll('.start-course-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const index = parseInt(btn.dataset.courseIndex);
+                startCourse(index);
+            });
+        });
+    }
+
+    function renderReservations(res){
+        const el = document.getElementById('reservationsList');
+        if (!res || res.length === 0) { el.textContent = 'No reservations yet.'; return; }
+        el.classList.remove('muted');
+        el.dataset.raw = JSON.stringify(res);
+        el.innerHTML = res.map((r, index) => {
+            const when = new Date(r.createdAt || r.startDate).toLocaleString();
+            const start = r.startDate ? new Date(r.startDate).toLocaleDateString() : '—';
+            return `
+                <div class="reservation-item-container">
+                    <div class="reservation-item" data-reservation-index="${index}" style="display:flex; justify-content:space-between; padding:12px; border-bottom:1px dashed #e6e6e6; cursor:pointer; border-radius:8px; transition:background 0.2s ease;">
+                <div><span class="pill">Plan</span> <strong>${r.planName}</strong> <span class="muted">${r.priceText || ''}</span></div>
+                <div class="muted">Start: ${start} • ${when}</div>
+                    </div>
+                    <div class="reservation-detail-section" id="reservationDetailSection-${index}" style="display:none;">
+                        <div class="reservation-detail-layout">
+                            <!-- Main Reservation Info Card -->
+                            <div class="card reservation-main-card">
+                                <div class="reservation-detail-header">
+                                    <div class="reservation-detail-title">
+                                        <h3 class="reservation-detail-title-text">${r.planName}</h3>
+                                        <span class="reservation-badge">Reservation</span>
+                                    </div>
+                                    <button class="close-reservation-detail-btn" data-reservation-index="${index}">×</button>
+                                </div>
+                                
+                                <div class="reservation-info-grid">
+                                    <div class="reservation-info-item">
+                                        <div class="info-label">Start Date</div>
+                                        <div class="info-value reservation-start-date">${start}</div>
+                                    </div>
+                                    <div class="reservation-info-item">
+                                        <div class="info-label">Duration</div>
+                                        <div class="info-value">3 Months</div>
+                                    </div>
+                                    <div class="reservation-info-item">
+                                        <div class="info-label">Status</div>
+                                        <div class="info-value reservation-status">Active</div>
+                                    </div>
+                                    <div class="reservation-info-item">
+                                        <div class="info-label">Price</div>
+                                        <div class="info-value">${r.priceText || '$99/month'}</div>
+                                    </div>
+                                </div>
+                                
+                                <div class="reservation-description">
+                                    <h4>About This Plan</h4>
+                                    <p>This is a comprehensive learning plan designed to help you achieve your goals with expert guidance and personalized support.</p>
+                                </div>
+                                
+                                <div class="reservation-actions">
+                                    <button class="learn-more-reservation-btn" data-reservation-index="${index}">Learn More</button>
+                                </div>
+                            </div>
+                            
+                            <!-- Plan Details Grid -->
+                            <div class="reservation-details-grid" id="reservationDetailsExpanded-${index}" style="display:none;">
+                                <!-- Plan Features Card -->
+                                <div class="card reservation-detail-card">
+                                    <h4>✨ Plan Features</h4>
+                                    <div class="features-list">
+                                        <div class="feature-item">
+                                            <div class="feature-icon">📚</div>
+                                            <div class="feature-content">
+                                                <div class="feature-title">Unlimited Access</div>
+                                                <div class="feature-desc">Access to all course materials</div>
+                                            </div>
+                                        </div>
+                                        <div class="feature-item">
+                                            <div class="feature-icon">👨‍🏫</div>
+                                            <div class="feature-content">
+                                                <div class="feature-title">Expert Instructors</div>
+                                                <div class="feature-desc">Learn from industry professionals</div>
+                                            </div>
+                                        </div>
+                                        <div class="feature-item">
+                                            <div class="feature-icon">📱</div>
+                                            <div class="feature-content">
+                                                <div class="feature-title">Mobile Access</div>
+                                                <div class="feature-desc">Learn on any device, anywhere</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Benefits Card -->
+                                <div class="card reservation-detail-card">
+                                    <h4>🎯 What You'll Get</h4>
+                                    <ul class="benefits-points">
+                                        <li>Complete course access</li>
+                                        <li>Personalized learning path</li>
+                                        <li>Certificate of completion</li>
+                                        <li>Lifetime access to materials</li>
+                                    </ul>
+                                </div>
+                                
+                                <!-- Requirements Card -->
+                                <div class="card reservation-detail-card">
+                                    <h4>📋 Requirements</h4>
+                                    <div class="requirements">
+                                        <span class="req-item">Basic English</span>
+                                        <span class="req-item">Internet Connection</span>
+                                        <span class="req-item">Dedication to Learn</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+        
+        // Add click handlers to reservation items
+        el.querySelectorAll('.reservation-item').forEach(item => {
+            item.addEventListener('click', () => {
+                const index = parseInt(item.dataset.reservationIndex);
+                toggleReservationDetail(index);
+            });
+            item.addEventListener('mouseenter', () => {
+                item.style.background = '#f0fdf4';
+            });
+            item.addEventListener('mouseleave', () => {
+                item.style.background = 'transparent';
+            });
+        });
+        
+        // Add click handlers to close buttons
+        el.querySelectorAll('.close-reservation-detail-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const index = parseInt(btn.dataset.reservationIndex);
+                hideReservationDetail(index);
+            });
+        });
+        
+        // Add click handlers to learn more buttons
+        el.querySelectorAll('.learn-more-reservation-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const index = parseInt(btn.dataset.reservationIndex);
+                toggleReservationDetailsExpanded(index);
+            });
+        });
+    }
+
+    function renderOverview({ trials, reservations }){
+        const grid = document.getElementById('overviewGrid');
+        grid.style.display = 'grid';
+        document.getElementById('ovTrialsCount').textContent = (trials?.length || 0);
+        document.getElementById('ovReservCount').textContent = (reservations?.length || 0);
+        const trRecent = trials && trials[0] ? (trials[0].courseId?.title || trials[0].courseTitle || '—') : '—';
+        const rsRecent = reservations && reservations[0] ? `${reservations[0].planName} ${reservations[0].priceText || ''}` : '—';
+        document.getElementById('ovTrialsRecent').textContent = `Recent: ${trRecent}`;
+        document.getElementById('ovReservRecent').textContent = `Recent: ${rsRecent}`;
+        // Welcome name
+        const meText = document.getElementById('dashUserName')?.textContent || 'User';
+        const welcome = document.getElementById('ovWelcomeName');
+        if (welcome) welcome.textContent = meText;
+
+        // Populate your courses with defaults, then enrich from API and user activity
+        (async function fillCourses(){
+            const defaults = [
+                'Business English Course',
+                'Advanced Vocab Class',
+                'Grammar Workshop Alert',
+                'Communication Skills Boost',
+                'Basic vocabulary building.',
+                'Intermediate communication skills.',
+                'Advanced vocabulary mastery.',
+                'Elite communication proficiency.'
+            ];
+            const container = document.getElementById('ovCourses');
+            if (!container) return;
+            function render(list, progressMap){
+                const items = list.slice(0, 6).map((title, idx) => {
+                    const pct = Math.min(100, progressMap[title] ?? [22, 38, 15, 30, 12, 18][idx % 6]);
+                    return `<div class=\"muted\" style=\"margin:${idx? '10px' : '0'} 0 6px;\">${title}</div><div class=\"prog\" style=\"--w:${pct}%\"><i></i></div>`;
+                }).join('');
+                container.innerHTML = items;
+            }
+            const progressByTitle = Object.create(null);
+            // Boost based on current user's trials/reservations data already loaded above
+            try {
+                const trials = JSON.parse(document.getElementById('trialsList')?.dataset.raw || '[]');
+                trials.forEach(t => { const name = t.courseId?.title || t.courseTitle; if (name) progressByTitle[name] = (progressByTitle[name]||0) + 20; });
+            } catch {}
+            try {
+                const resv = JSON.parse(document.getElementById('reservationsList')?.dataset.raw || '[]');
+                resv.forEach(r => { const name = r.planName; if (name) progressByTitle[name] = (progressByTitle[name]||0) + 35; });
+            } catch {}
+            render(defaults, progressByTitle);
+            // Try to enrich with backend courses
+            try {
+                const res = await getWithRefresh('/api/courses');
+                if (Array.isArray(res) && res.length) {
+                    const titles = Array.from(new Set(defaults.concat(res.map(c => c.title))));
+                    render(titles, progressByTitle);
+                }
+            } catch {}
+        })();
+
+        // Render dynamic calendar with month navigation
+        try {
+            const gridEl = document.getElementById('calGrid');
+            const monthEl = document.getElementById('calMonth');
+            const prevBtn = document.getElementById('calPrev');
+            const nextBtn = document.getElementById('calNext');
+            const pickers = document.getElementById('calPickers');
+            const yearSel = document.getElementById('calYear');
+            const monSel = document.getElementById('calMon');
+            const applyBtn = document.getElementById('calApply');
+            let view = new Date();
+
+            function drawCalendar(date) {
+                const y = date.getFullYear();
+                const m = date.getMonth();
+                const first = new Date(y, m, 1);
+                const startDay = first.getDay();
+                const daysInMonth = new Date(y, m + 1, 0).getDate();
+                const prevMonthDays = new Date(y, m, 0).getDate();
+                const monthName = date.toLocaleString(undefined, { month: 'long' });
+                if (monthEl) monthEl.textContent = monthName + ' ' + y;
+                const today = new Date();
+                const cells = [];
+                for (let i = startDay - 1; i >= 0; i--) cells.push({ d: prevMonthDays - i, muted: true });
+                for (let d = 1; d <= daysInMonth; d++) cells.push({ d, today: (y===today.getFullYear() && m===today.getMonth() && d===today.getDate()) });
+                while (cells.length % 7 !== 0) cells.push({ d: cells.length % 7, muted: true });
+                gridEl.innerHTML = cells.map(c => `<div class=\"cal-cell${c.muted ? ' muted' : ''}${c.today ? ' today' : ''}\">${c.d}</div>`).join('');
+            }
+            drawCalendar(view);
+            prevBtn?.addEventListener('click', () => { view.setMonth(view.getMonth()-1); drawCalendar(view); });
+            nextBtn?.addEventListener('click', () => { view.setMonth(view.getMonth()+1); drawCalendar(view); });
+            // Build pickers
+            if (yearSel && monSel) {
+                const thisYear = new Date().getFullYear();
+                for (let y = thisYear - 5; y <= thisYear + 5; y++) {
+                    const opt = document.createElement('option'); opt.value = y; opt.textContent = y; yearSel.appendChild(opt);
+                }
+                const months = Array.from({length:12}, (_,i)=> new Date(2000,i,1).toLocaleString(undefined,{month:'long'}));
+                months.forEach((m,i)=>{ const opt=document.createElement('option'); opt.value=i; opt.textContent=m; monSel.appendChild(opt); });
+                // Toggle pickers when clicking month label
+                monthEl?.addEventListener('click', () => {
+                    pickers.style.display = pickers.style.display === 'grid' ? 'none' : 'grid';
+                    pickers.style.gridTemplateColumns = '1fr 1fr auto';
+                    yearSel.value = String(view.getFullYear());
+                    monSel.value = String(view.getMonth());
+                });
+                applyBtn?.addEventListener('click', () => {
+                    view.setFullYear(Number(yearSel.value));
+                    view.setMonth(Number(monSel.value));
+                    drawCalendar(view);
+                    pickers.style.display = 'none';
+                });
+            }
+        } catch (_) {}
+
+        // Fill compact lists for trials and reservations (top cards)
+        try {
+            const tList = document.getElementById('ovTrialsList');
+            if (tList) {
+                const top = (trials || []).slice(0, 3);
+                tList.innerHTML = top.length ? top.map(t => {
+                    const title = t.courseId?.title || t.courseTitle || 'Course';
+                    const when = new Date(t.createdAt || t.registeredAt).toLocaleDateString();
+                    return `<div class=\"item\"><div><span class=\"badge\">Trial</span> <span class=\"title\">${title}</span></div><div class=\"muted\">${when}</div></div>`;
+                }).join('') : '<div class=\"muted\">No trials yet.</div>';
+            }
+            const rList = document.getElementById('ovReservList');
+            if (rList) {
+                const topR = (reservations || []).slice(0, 3);
+                rList.innerHTML = topR.length ? topR.map(r => {
+                    const plan = r.planName || 'Plan';
+                    const price = r.priceText ? ` <span class=\\\"muted\\\">${r.priceText}</span>` : '';
+                    const when = new Date(r.createdAt || r.startDate).toLocaleDateString();
+                    return `<div class=\"item\"><div><span class=\"badge\">Plan</span> <span class=\"title\">${plan}</span>${price}</div><div class=\"muted\">${when}</div></div>`;
+                }).join('') : '<div class=\"muted\">No reservations yet.</div>';
+            }
+        } catch (_) {}
+    }
+
+    async function loadProfile(){
+        const pre = document.getElementById('profileJson');
+        const avatar = document.getElementById('dashAvatar');
+        const uname = document.getElementById('dashUserName');
+        const emailTip = document.getElementById('dashEmailTip');
+        const authError = document.getElementById('authError');
+        const lastHint = document.getElementById('lastLoginHint');
+        try {
+            const me = await getWithRefresh('/api/auth/me');
+            pre.textContent = JSON.stringify(me, null, 2);
+            avatar.textContent = initials(me.fullName);
+            if (authError) authError.style.display = 'none';
+            uname.textContent = me.fullName || 'User';
+            emailTip.textContent = me.email || '';
+            
+            // Update welcome avatar based on gender
+            const welcomeAvatar = document.getElementById('welcomeAvatar');
+            if (welcomeAvatar) {
+                welcomeAvatar.textContent = getGenderAvatar(me.gender, me.fullName);
+            }
+            // First, sync any pending trials saved pre-login
+            try { await syncPendingTrials(); } catch(_e){}
+            // Load trials and reservations
+            const [trials, reservations] = await Promise.all([
+                getWithRefresh('/api/trials/me'),
+                getWithRefresh('/api/reservations/me')
+            ]);
+            // Merge any remaining pending trials locally so user sees them immediately
+            const pending = getPendingTrials();
+            if (Array.isArray(pending) && pending.length) {
+                const pendingItems = pending.map(t => ({
+                    courseTitle: (t && t.courseTitle) || t,
+                    createdAt: new Date((t && t.ts) || Date.now()).toISOString()
+                }));
+                trials.push(...pendingItems);
+            }
+            // Sort newest first
+            trials.sort((a,b)=> new Date(b.createdAt||b.registeredAt) - new Date(a.createdAt||a.registeredAt));
+            reservations.sort((a,b)=> new Date(b.createdAt||b.startDate) - new Date(a.createdAt||a.startDate));
+            renderTrials(trials);
+            renderReservations(reservations);
+            renderOverview({ trials, reservations });
+        } catch (e) {
+            if (authError) authError.style.display = 'block';
+            const last = localStorage.getItem('last_login_email') || '—';
+            if (lastHint) lastHint.textContent = 'Last attempted login: ' + last;
+            pre.textContent = '{}';
+            avatar.textContent = 'U';
+            uname.textContent = 'Guest';
+            emailTip.textContent = '';
+            document.getElementById('trialsList').textContent = '—';
+            document.getElementById('reservationsList').textContent = '—';
+            
+            // Set default avatar for guest
+            const welcomeAvatar = document.getElementById('welcomeAvatar');
+            if (welcomeAvatar) {
+                welcomeAvatar.textContent = '👤';
+            }
+        }
+    }
+
+    // Trial Detail Functions
+    function toggleTrialDetail(index) {
+        const detailSection = document.getElementById(`trialDetailSection-${index}`);
+        const isVisible = detailSection.style.display !== 'none';
+        
+        if (isVisible) {
+            hideTrialDetail(index);
+        } else {
+            showTrialDetail(index);
+        }
+    }
+    
+    function showTrialDetail(index) {
+        const detailSection = document.getElementById(`trialDetailSection-${index}`);
+        const trials = JSON.parse(document.getElementById('trialsList').dataset.raw || '[]');
+        const trial = trials[index];
+        
+        if (!trial) return;
+        
+        // Set active trial index
+        activeTrialIndex = index;
+        
+        const title = trial.courseId?.title || trial.courseTitle || 'Course';
+        
+        // Calculate trial status and progress
+        const daysSinceEnrolled = Math.floor((Date.now() - new Date(trial.createdAt || trial.registeredAt)) / (1000 * 60 * 60 * 24));
+        const trialDuration = 7; // 7 days trial
+        const trialProgress = Math.min(100, Math.max(0, (daysSinceEnrolled / trialDuration) * 100));
+        const isExpired = daysSinceEnrolled > trialDuration;
+        
+        // Update status and progress in the detail section
+        const statusElement = detailSection.querySelector('.trial-status');
+        const progressElement = detailSection.querySelector('.trial-progress');
+        const progressTextElement = detailSection.querySelector('.trial-progress-text');
+        
+        statusElement.textContent = isExpired ? 'Expired' : 'Active';
+        statusElement.style.color = isExpired ? '#dc2626' : '#059669';
+        progressElement.style.width = trialProgress + '%';
+        progressTextElement.textContent = Math.round(trialProgress) + '%';
+        
+        // Load saved notes for this trial
+        const trialId = trial._id || trial.courseTitle;
+        const notesKey = `trial_notes_${trialId}`;
+        const savedNotes = localStorage.getItem(notesKey) || '';
+        document.getElementById('trialNotes').value = savedNotes;
+        
+        // Always load notes history when trial is selected
+        updateNotesHistory(trialId);
+        
+        // Load question history when trial is selected
+        updateQuestionHistory(trialId);
+        
+        // Load reminder settings
+        const reminderKey = `trial_reminder_${trialId}`;
+        const reminder = JSON.parse(localStorage.getItem(reminderKey) || '{}');
+        if (reminder.time) {
+            document.getElementById('reminderTime').value = reminder.time;
+            document.getElementById('reminderStatus').textContent = `Reminder set for ${reminder.time} daily`;
+            document.getElementById('reminderStatus').style.color = '#059669';
+            document.getElementById('setReminderBtn').textContent = 'Update Reminder';
+        }
+        
+        // Load progress data
+        const studyProgress = getStudyProgress(trialId);
+        document.getElementById('studyTime').textContent = `${studyProgress.studyTime} hours`;
+        document.getElementById('lessonsCompleted').textContent = `${studyProgress.lessonsCompleted}/${studyProgress.totalLessons}`;
+        document.getElementById('studyStreak').textContent = `${studyProgress.streak} days`;
+        
+        // Show the detail section
+        detailSection.style.display = 'block';
+        detailSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+    
+    function hideTrialDetail(index) {
+        const detailSection = document.getElementById(`trialDetailSection-${index}`);
+        if (detailSection) {
+            detailSection.style.display = 'none';
+        }
+        // Clear active trial index if this was the active one
+        if (activeTrialIndex === index) {
+            activeTrialIndex = null;
+        }
+    }
+    
+    function toggleTrialDetailsExpanded(index) {
+        const expanded = document.getElementById(`trialDetailsExpanded-${index}`);
+        const btn = document.querySelector(`[data-trial-index="${index}"].learn-more-trial-btn`);
+        const isVisible = expanded.style.display !== 'none';
+        expanded.style.display = isVisible ? 'none' : 'block';
+        btn.textContent = isVisible ? 'Learn More' : 'Show Less';
+    }
+    
+    function saveTrialNotes(trialId, notes) {
+        const notesKey = `trial_notes_${trialId}`;
+        const notesHistoryKey = `trial_notes_history_${trialId}`;
+        
+        // Save current notes
+        localStorage.setItem(notesKey, notes);
+        
+        // Add to notes history
+        const history = JSON.parse(localStorage.getItem(notesHistoryKey) || '[]');
+        if (notes.trim()) {
+            history.unshift({
+                content: notes,
+                timestamp: new Date().toISOString(),
+                date: new Date().toLocaleDateString(),
+                time: new Date().toLocaleTimeString()
+            });
+            // Keep only last 10 notes
+            if (history.length > 10) {
+                history.splice(10);
+            }
+            localStorage.setItem(notesHistoryKey, JSON.stringify(history));
+        }
+        
+        // Update UI
+        const statusEl = document.getElementById('notesStatus');
+        statusEl.textContent = 'Notes saved!';
+        statusEl.style.color = '#059669';
+        setTimeout(() => {
+            statusEl.textContent = '';
+        }, 2000);
+        
+        // Reset textarea
+        document.getElementById('trialNotes').value = '';
+        
+        // Update notes history display
+        updateNotesHistory(trialId);
+    }
+    
+    function updateNotesHistory(trialId) {
+        const notesHistoryKey = `trial_notes_history_${trialId}`;
+        const history = JSON.parse(localStorage.getItem(notesHistoryKey) || '[]');
+        const container = document.getElementById('notesHistoryContainer');
+        
+        if (history.length === 0) {
+            container.innerHTML = '<div class="no-notes">No saved notes yet</div>';
+        } else {
+            container.innerHTML = history.map(note => `
+                <div class="note-history-item">
+                    <div class="note-history-date">${note.date} at ${note.time}</div>
+                    <div class="note-history-content">${note.content}</div>
+                </div>
+            `).join('');
+        }
+    }
+    
+    function setStudyReminder(trialId, time) {
+        const reminderKey = `trial_reminder_${trialId}`;
+        const reminder = {
+            time: time,
+            enabled: true,
+            setAt: new Date().toISOString()
+        };
+        localStorage.setItem(reminderKey, JSON.stringify(reminder));
+        
+        const statusEl = document.getElementById('reminderStatus');
+        statusEl.textContent = `Reminder set for ${time} daily`;
+        statusEl.style.color = '#059669';
+        
+        // Update button text
+        const btn = document.getElementById('setReminderBtn');
+        btn.textContent = 'Update Reminder';
+    }
+    
+    function getStudyProgress(trialId) {
+        const progressKey = `trial_progress_${trialId}`;
+        const progress = JSON.parse(localStorage.getItem(progressKey) || JSON.stringify({
+            studyTime: 0,
+            lessonsCompleted: 0,
+            totalLessons: 5,
+            streak: 0,
+            lastStudyDate: null
+        }));
+        return progress;
+    }
+    
+    function updateStudyProgress(trialId, progress) {
+        const progressKey = `trial_progress_${trialId}`;
+        localStorage.setItem(progressKey, JSON.stringify(progress));
+    }
+    
+    function submitQuestion(trialId, question) {
+        const questionsKey = `trial_questions_${trialId}`;
+        const questions = JSON.parse(localStorage.getItem(questionsKey) || '[]');
+        
+        const questionData = {
+            question: question,
+            timestamp: new Date().toISOString(),
+            date: new Date().toLocaleDateString(),
+            time: new Date().toLocaleTimeString(),
+            status: 'pending'
+        };
+        
+        questions.unshift(questionData);
+        localStorage.setItem(questionsKey, JSON.stringify(questions));
+        
+        // Send email using Web3Forms
+        sendQuestionEmail(trialId, question, 'trial');
+        
+        // Update question history display
+        updateQuestionHistory(trialId);
+        
+        Swal.fire({
+            icon: 'success',
+            title: 'Question Submitted!',
+            text: 'Your question has been sent to our instructors. You will receive a response within 24 hours.',
+            confirmButtonText: 'OK'
+        });
+        
+        // Clear form
+        document.getElementById('questionText').value = '';
+        document.getElementById('questionForm').style.display = 'none';
+        document.getElementById('askQuestionBtn').textContent = 'Ask Question';
+    }
+    
+    // Reservation Detail Functions
+    function toggleReservationDetail(index) {
+        const detailSection = document.getElementById(`reservationDetailSection-${index}`);
+        const isVisible = detailSection.style.display !== 'none';
+        
+        if (isVisible) {
+            hideReservationDetail(index);
+        } else {
+            showReservationDetail(index);
+        }
+    }
+    
+    function showReservationDetail(index) {
+        const detailSection = document.getElementById(`reservationDetailSection-${index}`);
+        const reservations = JSON.parse(document.getElementById('reservationsList').dataset.raw || '[]');
+        const reservation = reservations[index];
+        
+        if (!reservation) return;
+        
+        // Set active reservation index
+        activeReservationIndex = index;
+        
+        const planName = reservation.planName || 'Plan';
+        const startDate = reservation.startDate ? new Date(reservation.startDate).toLocaleDateString() : '—';
+        
+        // Calculate reservation status
+        const daysSinceStart = reservation.startDate ? Math.floor((Date.now() - new Date(reservation.startDate)) / (1000 * 60 * 60 * 24)) : 0;
+        const isActive = daysSinceStart >= 0;
+        
+        // Update status in the detail section
+        const statusElement = detailSection.querySelector('.reservation-status');
+        statusElement.textContent = isActive ? 'Active' : 'Upcoming';
+        statusElement.style.color = isActive ? '#059669' : '#f59e0b';
+        
+        // Load saved notes for this reservation
+        const reservationId = reservation._id || reservation.planName;
+        const notesKey = `reservation_notes_${reservationId}`;
+        const savedNotes = localStorage.getItem(notesKey) || '';
+        document.getElementById('reservationNotes').value = savedNotes;
+        
+        // Always load notes history when reservation is selected
+        updateReservationNotesHistory(reservationId);
+        
+        // Load question history when reservation is selected
+        updateReservationQuestionHistory(reservationId);
+        
+        // Load reminder settings
+        const reminderKey = `reservation_reminder_${reservationId}`;
+        const reminder = JSON.parse(localStorage.getItem(reminderKey) || '{}');
+        if (reminder.time) {
+            document.getElementById('reservationReminderTime').value = reminder.time;
+            document.getElementById('reservationReminderStatus').textContent = `Reminder set for ${reminder.time} daily`;
+            document.getElementById('reservationReminderStatus').style.color = '#059669';
+            document.getElementById('setReservationReminderBtn').textContent = 'Update Reminder';
+        }
+        
+        // Load progress data
+        const progress = getReservationProgress(reservationId);
+        document.getElementById('reservationStudyTime').textContent = `${progress.studyTime} hours`;
+        document.getElementById('reservationLessonsCompleted').textContent = `${progress.lessonsCompleted}/${progress.totalLessons}`;
+        document.getElementById('reservationStudyStreak').textContent = `${progress.streak} days`;
+        
+        // Show the detail section
+        detailSection.style.display = 'block';
+        detailSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+    
+    function hideReservationDetail(index) {
+        const detailSection = document.getElementById(`reservationDetailSection-${index}`);
+        if (detailSection) {
+            detailSection.style.display = 'none';
+        }
+        // Clear active reservation index if this was the active one
+        if (activeReservationIndex === index) {
+            activeReservationIndex = null;
+        }
+    }
+    
+    function toggleReservationDetailsExpanded(index) {
+        const expanded = document.getElementById(`reservationDetailsExpanded-${index}`);
+        const btn = document.querySelector(`[data-reservation-index="${index}"].learn-more-reservation-btn`);
+        const isVisible = expanded.style.display !== 'none';
+        expanded.style.display = isVisible ? 'none' : 'block';
+        btn.textContent = isVisible ? 'Learn More' : 'Show Less';
+    }
+    
+    function saveReservationNotes(reservationId, notes) {
+        const notesKey = `reservation_notes_${reservationId}`;
+        const notesHistoryKey = `reservation_notes_history_${reservationId}`;
+        
+        // Save current notes
+        localStorage.setItem(notesKey, notes);
+        
+        // Add to notes history
+        const history = JSON.parse(localStorage.getItem(notesHistoryKey) || '[]');
+        if (notes.trim()) {
+            history.unshift({
+                content: notes,
+                timestamp: new Date().toISOString(),
+                date: new Date().toLocaleDateString(),
+                time: new Date().toLocaleTimeString()
+            });
+            // Keep only last 10 notes
+            if (history.length > 10) {
+                history.splice(10);
+            }
+            localStorage.setItem(notesHistoryKey, JSON.stringify(history));
+        }
+        
+        // Update UI
+        const statusEl = document.getElementById('reservationNotesStatus');
+        statusEl.textContent = 'Notes saved!';
+        statusEl.style.color = '#059669';
+        setTimeout(() => {
+            statusEl.textContent = '';
+        }, 2000);
+        
+        // Reset textarea
+        document.getElementById('reservationNotes').value = '';
+        
+        // Update notes history display
+        updateReservationNotesHistory(reservationId);
+    }
+    
+    function updateReservationNotesHistory(reservationId) {
+        const notesHistoryKey = `reservation_notes_history_${reservationId}`;
+        const history = JSON.parse(localStorage.getItem(notesHistoryKey) || '[]');
+        const container = document.getElementById('reservationNotesHistoryContainer');
+        
+        if (history.length === 0) {
+            container.innerHTML = '<div class="no-notes">No saved notes yet</div>';
+        } else {
+            container.innerHTML = history.map(note => `
+                <div class="note-history-item">
+                    <div class="note-history-date">${note.date} at ${note.time}</div>
+                    <div class="note-history-content">${note.content}</div>
+                </div>
+            `).join('');
+        }
+    }
+    
+    function setReservationStudyReminder(reservationId, time) {
+        const reminderKey = `reservation_reminder_${reservationId}`;
+        const reminder = {
+            time: time,
+            enabled: true,
+            setAt: new Date().toISOString()
+        };
+        localStorage.setItem(reminderKey, JSON.stringify(reminder));
+        
+        const statusEl = document.getElementById('reservationReminderStatus');
+        statusEl.textContent = `Reminder set for ${time} daily`;
+        statusEl.style.color = '#059669';
+        
+        // Update button text
+        const btn = document.getElementById('setReservationReminderBtn');
+        btn.textContent = 'Update Reminder';
+    }
+    
+    function getReservationProgress(reservationId) {
+        const progressKey = `reservation_progress_${reservationId}`;
+        const progress = JSON.parse(localStorage.getItem(progressKey) || JSON.stringify({
+            studyTime: 0,
+            lessonsCompleted: 0,
+            totalLessons: 10,
+            streak: 0,
+            lastStudyDate: null
+        }));
+        return progress;
+    }
+    
+    function updateReservationProgress(reservationId, progress) {
+        const progressKey = `reservation_progress_${reservationId}`;
+        localStorage.setItem(progressKey, JSON.stringify(progress));
+    }
+    
+    function submitReservationQuestion(reservationId, question) {
+        const questionsKey = `reservation_questions_${reservationId}`;
+        const questions = JSON.parse(localStorage.getItem(questionsKey) || '[]');
+        
+        const questionData = {
+            question: question,
+            timestamp: new Date().toISOString(),
+            date: new Date().toLocaleDateString(),
+            time: new Date().toLocaleTimeString(),
+            status: 'pending'
+        };
+        
+        questions.unshift(questionData);
+        localStorage.setItem(questionsKey, JSON.stringify(questions));
+        
+        // Send email using Web3Forms
+        sendQuestionEmail(reservationId, question, 'reservation');
+        
+        // Update question history display
+        updateReservationQuestionHistory(reservationId);
+        
+        Swal.fire({
+            icon: 'success',
+            title: 'Question Submitted!',
+            text: 'Your question has been sent to our instructors. You will receive a response within 24 hours.',
+            confirmButtonText: 'OK'
+        });
+        
+        // Clear form
+        document.getElementById('reservationQuestionText').value = '';
+        document.getElementById('reservationQuestionForm').style.display = 'none';
+        document.getElementById('askReservationQuestionBtn').textContent = 'Ask Question';
+    }
+    
+    // Email and Question History Functions
+    function sendQuestionEmail(courseId, question, type) {
+        // Web3Forms configuration
+        const WEB3FORMS_ACCESS_KEY = '17dd5cd4-e555-4d78-9009-8a4e09f41e9f';
+        const WEB3FORMS_TO_EMAIL = 'spellvoc1997@gmail.com';// Replace with your email
+        
+        const formData = {
+            access_key: web3formsAccessKey,
+            name: 'Student Question',
+            email: recipientEmail,
+            subject: `Question about ${type === 'trial' ? 'Trial Course' : 'Reservation Plan'}: ${courseId}`,
+            message: `
+Course/Plan: ${courseId}
+Type: ${type === 'trial' ? 'Trial Course' : 'Reservation Plan'}
+Question: ${question}
+Submitted: ${new Date().toLocaleString()}
+            `,
+            replyto: recipientEmail
+        };
+        
+        // Send email via Web3Forms
+        fetch('https://api.web3forms.com/submit', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(formData)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                console.log('Question email sent successfully');
+            } else {
+                console.error('Failed to send question email:', data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error sending question email:', error);
+        });
+    }
+    
+    function updateQuestionHistory(trialId) {
+        const questionsKey = `trial_questions_${trialId}`;
+        const questions = JSON.parse(localStorage.getItem(questionsKey) || '[]');
+        const container = document.getElementById('questionHistoryContainer');
+        
+        if (questions.length === 0) {
+            container.innerHTML = '<div class="no-questions">No questions asked yet</div>';
+        } else {
+            container.innerHTML = questions.map(q => `
+                <div class="question-history-item">
+                    <div class="question-history-date">${q.date} at ${q.time}</div>
+                    <div class="question-history-content">${q.question}</div>
+                    <div class="question-history-status">Status: ${q.status}</div>
+                </div>
+            `).join('');
+        }
+    }
+    
+    function updateReservationQuestionHistory(reservationId) {
+        const questionsKey = `reservation_questions_${reservationId}`;
+        const questions = JSON.parse(localStorage.getItem(questionsKey) || '[]');
+        const container = document.getElementById('reservationQuestionHistoryContainer');
+        
+        if (questions.length === 0) {
+            container.innerHTML = '<div class="no-questions">No questions asked yet</div>';
+        } else {
+            container.innerHTML = questions.map(q => `
+                <div class="question-history-item">
+                    <div class="question-history-date">${q.date} at ${q.time}</div>
+                    <div class="question-history-content">${q.question}</div>
+                    <div class="question-history-status">Status: ${q.status}</div>
+                </div>
+            `).join('');
+        }
+    }
+    
+    // Course Detail Functions
+    function toggleCourseDetail(index) {
+        const detailSection = document.getElementById(`courseDetailSection-${index}`);
+        const isVisible = detailSection.style.display !== 'none';
+        
+        if (isVisible) {
+            hideCourseDetail(index);
+        } else {
+            showCourseDetail(index);
+        }
+    }
+    
+    function showCourseDetail(index) {
+        const detailSection = document.getElementById(`courseDetailSection-${index}`);
+        const courses = JSON.parse(document.getElementById('coursesList').dataset.raw || '[]');
+        const course = courses[index];
+        
+        if (!course) return;
+        
+        // Set active course index
+        activeCourseIndex = index;
+        
+        // Update individual course progress and analytics
+        updateIndividualCourseData(course);
+        
+        // Show the detail section
+        detailSection.style.display = 'block';
+        detailSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+    
+    function hideCourseDetail(index) {
+        const detailSection = document.getElementById(`courseDetailSection-${index}`);
+        if (detailSection) {
+            detailSection.style.display = 'none';
+        }
+        // Clear active course index if this was the active one
+        if (activeCourseIndex === index) {
+            activeCourseIndex = null;
+        }
+    }
+    
+    function toggleCourseDetailsExpanded(index) {
+        const expanded = document.getElementById(`courseDetailsExpanded-${index}`);
+        const btn = document.querySelector(`[data-course-index="${index}"].learn-more-course-btn`);
+        const isVisible = expanded.style.display !== 'none';
+        expanded.style.display = isVisible ? 'none' : 'block';
+        btn.textContent = isVisible ? 'Course Details' : 'Show Less';
+    }
+    
+    function startCourse(index) {
+        const courses = JSON.parse(document.getElementById('coursesList').dataset.raw || '[]');
+        const course = courses[index];
+        if (course) {
+            Swal.fire({
+                icon: 'success',
+                title: 'Starting Course!',
+                text: `Redirecting to ${course.title} content...`,
+                confirmButtonText: 'OK'
+            });
+            // Here you would typically redirect to the course content page
+        }
+    }
+    
+    function updateIndividualCourseData(course) {
+        // Update individual course progress
+        document.getElementById('selectedCourseProgress').textContent = `${course.progress}%`;
+        
+        // Load current course progress into the input fields
+        document.getElementById('courseProgressInput').value = course.progress;
+        document.getElementById('courseStudyTimeInput').value = Math.floor(course.progress * 0.3);
+        document.getElementById('courseLessonsInput').value = course.completedLessons || 0;
+        
+        // Calculate today's goal for this course
+        const todayGoal = Math.min(100, course.progress + Math.floor(Math.random() * 15));
+        document.getElementById('selectedCourseGoal').textContent = `${todayGoal}%`;
+        
+        // Calculate study time for this course
+        const studyTime = Math.floor(course.progress * 0.3);
+        document.getElementById('selectedCourseStudyTime').textContent = `${studyTime}h`;
+        
+        // Load saved reminders for this course
+        const courseReminders = getCourseReminders(course.id);
+        if (courseReminders.studyReminder) {
+            document.getElementById('courseReminderTime').value = courseReminders.studyReminder;
+        }
+        if (courseReminders.weeklyCheckDay) {
+            document.getElementById('weeklyCheckDay').value = courseReminders.weeklyCheckDay;
+        }
+        
+        // Update analytics for this course
+        updateCourseAnalytics();
+    }
+    
+    function updateCourseAnalytics() {
+        // Load saved analytics data
+        const savedAnalytics = getSavedAnalytics();
+        
+        document.getElementById('totalStudyTime').textContent = `${savedAnalytics.totalStudyTime} hours`;
+        document.getElementById('coursesCompleted').textContent = savedAnalytics.coursesCompleted;
+        document.getElementById('averageRating').textContent = savedAnalytics.averageRating;
+        document.getElementById('studyStreak').textContent = `${savedAnalytics.studyStreak} days`;
+    }
+    
+    function getSavedAnalytics() {
+        return JSON.parse(localStorage.getItem('learning_analytics') || JSON.stringify({
+            studyStreak: 0,
+            totalStudyTime: 0,
+            coursesCompleted: 0,
+            averageRating: 0.0
+        }));
+    }
+    
+    function saveAnalytics() {
+        const studyStreak = parseInt(document.getElementById('setStudyStreak').value);
+        const totalStudyTime = parseInt(document.getElementById('setTotalStudyTime').value);
+        const coursesCompleted = parseInt(document.getElementById('setCoursesCompleted').value);
+        const averageRating = parseFloat(document.getElementById('setAverageRating').value);
+        
+        const analytics = {
+            studyStreak: studyStreak,
+            totalStudyTime: totalStudyTime,
+            coursesCompleted: coursesCompleted,
+            averageRating: averageRating,
+            savedAt: new Date().toISOString()
+        };
+        
+        localStorage.setItem('learning_analytics', JSON.stringify(analytics));
+        
+        // Update the display
+        updateCourseAnalytics();
+        
+        Swal.fire({
+            icon: 'success',
+            title: 'Analytics Saved!',
+            text: 'Learning analytics updated successfully.',
+            confirmButtonText: 'OK'
+        });
+    }
+    
+    function loadAnalyticsSettings() {
+        const savedAnalytics = getSavedAnalytics();
+        
+        document.getElementById('setStudyStreak').value = savedAnalytics.studyStreak;
+        document.getElementById('setTotalStudyTime').value = savedAnalytics.totalStudyTime;
+        document.getElementById('setCoursesCompleted').value = savedAnalytics.coursesCompleted;
+        document.getElementById('setAverageRating').value = savedAnalytics.averageRating;
+    }
+    
+    function loadSavedCourseProgress(courses) {
+        return courses.map(course => {
+            const savedProgress = JSON.parse(localStorage.getItem(`course_progress_${course.id}`) || JSON.stringify({
+                progress: course.progress,
+                completedLessons: course.completedLessons,
+                studyTime: Math.floor(course.progress * 0.3)
+            }));
+            
+            return {
+                ...course,
+                progress: savedProgress.progress,
+                completedLessons: savedProgress.completedLessons
+            };
+        });
+    }
+    
+    function saveCourseProgress(courseId, progressData) {
+        localStorage.setItem(`course_progress_${courseId}`, JSON.stringify(progressData));
+    }
+    
+    function loadDashboardGoals() {
+        const savedGoals = JSON.parse(localStorage.getItem('overall_course_goals') || JSON.stringify({
+            dailyStudyTime: 2,
+            weeklyScore: 80,
+            monthlyCompletion: 5
+        }));
+        
+        // Update dashboard pie charts with saved goals
+        updateDashboardGoals(savedGoals);
+    }
+    
+    function loadDefaultTrialNotesHistory() {
+        // Always try to load note history for trials section
+        const trials = JSON.parse(document.getElementById('trialsList').dataset.raw || '[]');
+        if (trials.length > 0) {
+            // Find the first trial that has notes and show its history
+            for (let trial of trials) {
+                const trialId = trial._id || trial.courseTitle;
+                const notesHistoryKey = `trial_notes_history_${trialId}`;
+                const history = JSON.parse(localStorage.getItem(notesHistoryKey) || '[]');
+                if (history.length > 0) {
+                    // Show this trial's notes history
+                    updateNotesHistory(trialId);
+                    return;
+                }
+            }
+        }
+        
+        // If no notes found, show empty state
+        const container = document.getElementById('notesHistoryContainer');
+        if (container) {
+            container.innerHTML = '<div class="no-notes">No saved notes yet</div>';
+        }
+    }
+    
+    function loadDefaultReservationNotesHistory() {
+        // Always try to load note history for reservations section
+        const reservations = JSON.parse(document.getElementById('reservationsList').dataset.raw || '[]');
+        if (reservations.length > 0) {
+            // Find the first reservation that has notes and show its history
+            for (let reservation of reservations) {
+                const reservationId = reservation._id || reservation.planName;
+                const notesHistoryKey = `reservation_notes_history_${reservationId}`;
+                const history = JSON.parse(localStorage.getItem(notesHistoryKey) || '[]');
+                if (history.length > 0) {
+                    // Show this reservation's notes history
+                    updateReservationNotesHistory(reservationId);
+                    return;
+                }
+            }
+        }
+        
+        // If no notes found, show empty state
+        const container = document.getElementById('reservationNotesHistoryContainer');
+        if (container) {
+            container.innerHTML = '<div class="no-notes">No saved notes yet</div>';
+        }
+    }
+    
+    function startRecommendedCourse(courseTitle, courseIcon) {
+        // Create a new course object for the recommended course
+        const newCourse = {
+            id: Date.now(), // Use timestamp as unique ID
+            title: courseTitle,
+            difficulty: "Intermediate",
+            duration: "6 weeks",
+            progress: 0,
+            rating: 4.5,
+            icon: courseIcon,
+            description: `Start your journey with ${courseTitle} and improve your skills.`,
+            instructor: "Expert Instructor",
+            lessons: 18,
+            completedLessons: 0,
+            startDate: new Date().toISOString().split('T')[0],
+            category: "Recommended"
+        };
+        
+        // Get current courses
+        const currentCourses = JSON.parse(document.getElementById('coursesList').dataset.raw || '[]');
+        
+        // Check if course already exists
+        const existingCourse = currentCourses.find(course => course.title === courseTitle);
+        if (existingCourse) {
+            Swal.fire({
+                icon: 'info',
+                title: 'Course Already Added',
+                text: `${courseTitle} is already in your courses list.`,
+                confirmButtonText: 'OK'
+            });
+            return;
+        }
+        
+        // Add new course to the list
+        currentCourses.unshift(newCourse); // Add to beginning of list
+        
+        // Re-render courses with the new course
+        renderCourses(currentCourses);
+        
+        // Show success message
+        Swal.fire({
+            icon: 'success',
+            title: 'Course Added!',
+            text: `${courseTitle} has been added to your courses.`,
+            confirmButtonText: 'OK'
+        });
+        
+        // Automatically show the course detail
+        setTimeout(() => {
+            showCourseDetail(0); // Show the first course (newly added)
+        }, 500);
+    }
+    
+    function getCourseGoals(courseId) {
+        const goalsKey = `course_goals_${courseId}`;
+        return JSON.parse(localStorage.getItem(goalsKey) || JSON.stringify({
+            dailyStudyTime: 2,
+            weeklyScore: 80,
+            completionGoal: 100
+        }));
+    }
+    
+    function getCourseReminders(courseId) {
+        const remindersKey = `course_reminders_${courseId}`;
+        return JSON.parse(localStorage.getItem(remindersKey) || JSON.stringify({
+            studyReminder: '',
+            weeklyCheckDay: 'monday'
+        }));
+    }
+    
+    function saveOverallGoals() {
+        const dailyGoal = document.getElementById('overallDailyStudyGoal').value;
+        const weeklyGoal = document.getElementById('overallWeeklyScoreGoal').value;
+        const monthlyGoal = document.getElementById('overallMonthlyGoal').value;
+        
+        const goals = {
+            dailyStudyTime: parseInt(dailyGoal),
+            weeklyScore: parseInt(weeklyGoal),
+            monthlyCompletion: parseInt(monthlyGoal),
+            savedAt: new Date().toISOString()
+        };
+        
+        localStorage.setItem('overall_course_goals', JSON.stringify(goals));
+        
+        // Update dashboard with new goals
+        updateDashboardGoals(goals);
+        
+        Swal.fire({
+            icon: 'success',
+            title: 'Overall Goals Saved!',
+            text: 'Daily goals saved successfully and synced with dashboard.',
+            confirmButtonText: 'OK'
+        });
+    }
+    
+    function updateCourseProgress() {
+        if (activeCourseIndex === null) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'No Course Selected',
+                text: 'Please select a course first to update progress.',
+                confirmButtonText: 'OK'
+            });
+            return;
+        }
+        
+        const courses = JSON.parse(document.getElementById('coursesList').dataset.raw || '[]');
+        const course = courses[activeCourseIndex];
+        
+        const progress = parseInt(document.getElementById('courseProgressInput').value);
+        const studyTime = parseInt(document.getElementById('courseStudyTimeInput').value);
+        const lessonsCompleted = parseInt(document.getElementById('courseLessonsInput').value);
+        
+        // Update the course data
+        course.progress = Math.min(100, Math.max(0, progress));
+        course.completedLessons = Math.min(course.lessons, Math.max(0, lessonsCompleted));
+        
+        // Save course progress to localStorage
+        saveCourseProgress(course.id, {
+            progress: course.progress,
+            completedLessons: course.completedLessons,
+            studyTime: studyTime
+        });
+        
+        // Save updated course data
+        const coursesList = JSON.parse(document.getElementById('coursesList').dataset.raw || '[]');
+        coursesList[activeCourseIndex] = course;
+        document.getElementById('coursesList').dataset.raw = JSON.stringify(coursesList);
+        
+        // Update the display
+        updateIndividualCourseData(course);
+        
+        // Re-render the courses list to show updated progress
+        renderCourses(coursesList);
+        
+        Swal.fire({
+            icon: 'success',
+            title: 'Progress Updated!',
+            text: `Progress updated successfully for ${course.title}`,
+            confirmButtonText: 'OK'
+        });
+    }
+    
+    function updateDashboardGoals(goals) {
+        // Update the dashboard overview with course goals
+        const todayGoalElement = document.querySelector('.kpi[style*="--val: 85%"] .meta .title');
+        if (todayGoalElement) {
+            todayGoalElement.textContent = `Today's goal: ${goals.dailyStudyTime}h study`;
+        }
+        
+        const overallScoreElement = document.querySelector('.kpi[style*="--val: 50%"] .meta .title');
+        if (overallScoreElement) {
+            overallScoreElement.textContent = `Overall score: ${goals.weeklyScore}%`;
+        }
+        
+        // Update pie chart values
+        const todayGoalRing = document.querySelector('.kpi[style*="--val: 85%"] .ring');
+        if (todayGoalRing) {
+            const progressPercent = Math.min(100, Math.max(0, goals.dailyStudyTime * 10)); // Convert hours to percentage
+            todayGoalRing.style.setProperty('--val', `${progressPercent}%`);
+            todayGoalRing.querySelector('span').textContent = `${Math.round(progressPercent)}%`;
+        }
+        
+        const overallScoreRing = document.querySelector('.kpi[style*="--val: 50%"] .ring');
+        if (overallScoreRing) {
+            overallScoreRing.style.setProperty('--val', `${goals.weeklyScore}%`);
+            overallScoreRing.querySelector('span').textContent = `${goals.weeklyScore}%`;
+        }
+        
+        // Update right side pie charts
+        const rightTodayGoal = document.querySelector('.pie[style*="--val:85%"] .ring');
+        if (rightTodayGoal) {
+            const progressPercent = Math.min(100, Math.max(0, goals.dailyStudyTime * 10));
+            rightTodayGoal.style.background = `conic-gradient(#f59e0b ${progressPercent}%, #e5e7eb 0)`;
+            rightTodayGoal.querySelector('span').textContent = `${Math.round(progressPercent)}%`;
+        }
+        
+        const rightOverallScore = document.querySelector('.pie[style*="--val:50%"] .ring');
+        if (rightOverallScore) {
+            rightOverallScore.style.background = `conic-gradient(#4f46e5 ${goals.weeklyScore}%, #e5e7eb 0)`;
+            rightOverallScore.querySelector('span').textContent = `${goals.weeklyScore}%`;
+        }
+    }
+    
+    function loadOverallGoals() {
+        const savedGoals = JSON.parse(localStorage.getItem('overall_course_goals') || JSON.stringify({
+            dailyStudyTime: 2,
+            weeklyScore: 80,
+            monthlyCompletion: 5
+        }));
+        
+        document.getElementById('overallDailyStudyGoal').value = savedGoals.dailyStudyTime;
+        document.getElementById('overallWeeklyScoreGoal').value = savedGoals.weeklyScore;
+        document.getElementById('overallMonthlyGoal').value = savedGoals.monthlyCompletion;
+        
+        // Also load analytics settings
+        loadAnalyticsSettings();
+    }
+    
+    function setCourseReminders() {
+        if (activeCourseIndex === null) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'No Course Selected',
+                text: 'Please select a course first to set reminders.',
+                confirmButtonText: 'OK'
+            });
+            return;
+        }
+        
+        const courses = JSON.parse(document.getElementById('coursesList').dataset.raw || '[]');
+        const course = courses[activeCourseIndex];
+        
+        const reminderTime = document.getElementById('courseReminderTime').value;
+        const weeklyCheckDay = document.getElementById('weeklyCheckDay').value;
+        
+        if (!reminderTime) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Missing Information',
+                text: 'Please select a reminder time.',
+                confirmButtonText: 'OK'
+            });
+            return;
+        }
+        
+        const reminders = {
+            studyReminder: reminderTime,
+            weeklyCheckDay: weeklyCheckDay,
+            enabled: true,
+            setAt: new Date().toISOString()
+        };
+        
+        const remindersKey = `course_reminders_${course.id}`;
+        localStorage.setItem(remindersKey, JSON.stringify(reminders));
+        
+        Swal.fire({
+            icon: 'success',
+            title: 'Reminders Set!',
+            text: `Reminders set successfully for ${course.title}`,
+            confirmButtonText: 'OK'
+        });
+    }
+    
+    function generateCourseContent(courseTitle) {
+        // Generate dynamic content based on course title
+        const content = {
+            curriculum: [
+                { icon: '📚', title: 'Introduction to ' + courseTitle, duration: '15 minutes' },
+                { icon: '🎯', title: 'Core Concepts & Fundamentals', duration: '30 minutes' },
+                { icon: '💡', title: 'Practical Applications', duration: '45 minutes' },
+                { icon: '🔧', title: 'Hands-on Exercises', duration: '60 minutes' },
+                { icon: '📝', title: 'Assessment & Review', duration: '20 minutes' }
+            ],
+            learningPoints: [
+                'Master fundamental concepts and principles',
+                'Apply knowledge in real-world scenarios',
+                'Build confidence through practical exercises',
+                'Receive personalized feedback and guidance',
+                'Develop problem-solving skills',
+                'Connect with fellow learners'
+            ],
+            prerequisites: [
+                'Basic English proficiency',
+                'Stable internet connection',
+                'Motivation to learn and improve',
+                'Dedication to complete the trial period'
+            ]
+        };
+        
+        return content;
+    }
+
+    document.getElementById('logoutBtn').addEventListener('click', async () => {
+        try { await api('/api/auth/logout', { method: 'POST' }); } catch(e){}
+        window.location.href = 'index.html';
+    });
+
+    // Sidebar section switching
+    function showSection(section){
+        const overviewGrid = document.getElementById('overviewGrid');
+        const profileCard = document.getElementById('profileJson')?.closest('.card');
+        const trialsSectionLayout = document.getElementById('trialsSectionLayout');
+        const reservationsSectionLayout = document.getElementById('reservationsSectionLayout');
+        const coursesSectionLayout = document.getElementById('coursesSectionLayout');
+        const trialsHeader = document.getElementById('trials');
+        const reservationsHeader = document.getElementById('reservations');
+        const coursesHeader = document.getElementById('courses');
+
+        // Hide all by default
+        if (overviewGrid) overviewGrid.style.display = 'none';
+        if (profileCard) profileCard.style.display = 'none';
+        if (trialsSectionLayout) trialsSectionLayout.style.display = 'none';
+        if (reservationsSectionLayout) reservationsSectionLayout.style.display = 'none';
+        if (coursesSectionLayout) coursesSectionLayout.style.display = 'none';
+        if (trialsHeader) trialsHeader.style.display = 'none';
+        if (reservationsHeader) reservationsHeader.style.display = 'none';
+        if (coursesHeader) coursesHeader.style.display = 'none';
+
+        // Show requested
+        if (section === 'overview'){
+            if (overviewGrid) overviewGrid.style.display = 'grid';
+        } else if (section === 'trials'){
+            if (trialsSectionLayout) trialsSectionLayout.style.display = 'block';
+            if (trialsHeader) trialsHeader.style.display = '';
+        } else if (section === 'reservations'){
+            if (reservationsSectionLayout) reservationsSectionLayout.style.display = 'block';
+            if (reservationsHeader) reservationsHeader.style.display = '';
+        } else if (section === 'courses'){
+            if (coursesSectionLayout) coursesSectionLayout.style.display = 'block';
+            if (coursesHeader) coursesHeader.style.display = '';
+            // Load courses when section is shown
+            renderCourses();
+            // Load saved overall goals
+            loadOverallGoals();
+        }
+
+        // Active link state
+        document.querySelectorAll('.dash-sidebar a').forEach(a => {
+            const hash = (a.getAttribute('href')||'').replace('#','');
+            if (hash === section) a.classList.add('active'); else a.classList.remove('active');
+        });
+
+        // Scroll to top of main area
+        document.querySelector('.dash-main')?.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    document.querySelectorAll('.dash-sidebar a').forEach(a => {
+        a.addEventListener('click', (e) => {
+            e.preventDefault();
+            const hash = (a.getAttribute('href')||'').replace('#','') || 'overview';
+            showSection(hash);
+            // Close sidebar on mobile after navigation
+            document.getElementById('dashSidebar')?.classList.remove('open');
+        });
+    });
+
+    // Mobile hamburger toggle and backdrop close
+    (function(){
+        const hb = document.getElementById('dashHamburger');
+        const sb = document.getElementById('dashSidebar');
+        if (hb && sb){
+            hb.addEventListener('click', (e) => {
+                e.stopPropagation();
+                sb.classList.toggle('open');
+            });
+            document.addEventListener('click', (e) => {
+                if (window.matchMedia('(max-width: 900px)').matches){
+                    if (!sb.contains(e.target) && e.target !== hb) sb.classList.remove('open');
+                }
+            });
+        }
+    })();
+
+    // Trial Detail Event Listeners
+    document.addEventListener('DOMContentLoaded', function() {
+        
+        // Save notes button
+        document.getElementById('saveNotesBtn').addEventListener('click', function() {
+            const notes = document.getElementById('trialNotes').value;
+            
+            if (activeTrialIndex !== null) {
+                // Get trial data from the active index
+                const trials = JSON.parse(document.getElementById('trialsList').dataset.raw || '[]');
+                const trial = trials[activeTrialIndex];
+                if (trial) {
+                    const trialTitle = trial.courseId?.title || trial.courseTitle || 'Unknown Course';
+                    saveTrialNotes(trialTitle, notes);
+                }
+            } else {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'No Trial Selected',
+                    text: 'Please select a trial first to save notes.',
+                    confirmButtonText: 'OK'
+                });
+            }
+        });
+        
+        // Set reminder button
+        document.getElementById('setReminderBtn').addEventListener('click', function() {
+            const settings = document.getElementById('reminderSettings');
+            const isVisible = settings.style.display !== 'none';
+            
+            if (isVisible) {
+                // Save reminder
+                const time = document.getElementById('reminderTime').value;
+                if (time) {
+                    const activeDetailSection = document.querySelector('.trial-detail-section[style*="block"]');
+                    if (activeDetailSection) {
+                        const titleElement = activeDetailSection.querySelector('.trial-detail-title-text');
+                        const trialTitle = titleElement ? titleElement.textContent : 'Unknown Course';
+                        setStudyReminder(trialTitle, time);
+                        settings.style.display = 'none';
+                    }
+                } else {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Missing Time',
+                        text: 'Please select a time for your reminder.',
+                        confirmButtonText: 'OK'
+                    });
+                }
+            } else {
+                // Show settings
+                settings.style.display = 'block';
+                this.textContent = 'Save Reminder';
+            }
+        });
+        
+        // View progress button
+        document.getElementById('viewProgressBtn').addEventListener('click', function() {
+            const details = document.getElementById('progressDetails');
+            const isVisible = details.style.display !== 'none';
+            
+            if (isVisible) {
+                details.style.display = 'none';
+                this.textContent = 'View Progress';
+            } else {
+                details.style.display = 'block';
+                this.textContent = 'Hide Progress';
+                
+                // Simulate some progress updates
+                const activeDetailSection = document.querySelector('.trial-detail-section[style*="block"]');
+                if (activeDetailSection) {
+                    const titleElement = activeDetailSection.querySelector('.trial-detail-title-text');
+                    const trialTitle = titleElement ? titleElement.textContent : 'Unknown Course';
+                    const progress = getStudyProgress(trialTitle);
+                
+                    // Add some random progress for demo
+                    if (Math.random() > 0.7) {
+                        progress.studyTime += Math.floor(Math.random() * 2) + 1;
+                        progress.lessonsCompleted = Math.min(progress.totalLessons, progress.lessonsCompleted + 1);
+                        progress.streak += Math.floor(Math.random() * 3) + 1;
+                        updateStudyProgress(trialTitle, progress);
+                        
+                        // Update display
+                        document.getElementById('studyTime').textContent = `${progress.studyTime} hours`;
+                        document.getElementById('lessonsCompleted').textContent = `${progress.lessonsCompleted}/${progress.totalLessons}`;
+                        document.getElementById('studyStreak').textContent = `${progress.streak} days`;
+                    }
+                }
+            }
+        });
+        
+        // Ask question button
+        document.getElementById('askQuestionBtn').addEventListener('click', function() {
+            const form = document.getElementById('questionForm');
+            const isVisible = form.style.display !== 'none';
+            
+            if (isVisible) {
+                form.style.display = 'none';
+                this.textContent = 'Ask Question';
+            } else {
+                form.style.display = 'block';
+                this.textContent = 'Cancel';
+            }
+        });
+        
+        // Submit question button
+        document.getElementById('submitQuestionBtn').addEventListener('click', function() {
+            const question = document.getElementById('questionText').value.trim();
+            if (question) {
+                const activeDetailSection = document.querySelector('.trial-detail-section[style*="block"]');
+                if (activeDetailSection) {
+                    const titleElement = activeDetailSection.querySelector('.trial-detail-title-text');
+                    const trialTitle = titleElement ? titleElement.textContent : 'Unknown Course';
+                    submitQuestion(trialTitle, question);
+                }
+            } else {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Missing Question',
+                    text: 'Please enter your question.',
+                    confirmButtonText: 'OK'
+                });
+            }
+        });
+        
+        // Save reservation notes button
+        document.getElementById('saveReservationNotesBtn').addEventListener('click', function() {
+            const notes = document.getElementById('reservationNotes').value;
+            
+            if (activeReservationIndex !== null) {
+                // Get reservation data from the active index
+                const reservations = JSON.parse(document.getElementById('reservationsList').dataset.raw || '[]');
+                const reservation = reservations[activeReservationIndex];
+                if (reservation) {
+                    const reservationTitle = reservation.planName || 'Unknown Plan';
+                    saveReservationNotes(reservationTitle, notes);
+                }
+            } else {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'No Reservation Selected',
+                    text: 'Please select a reservation first to save notes.',
+                    confirmButtonText: 'OK'
+                });
+            }
+        });
+        
+        // Set reservation reminder button
+        document.getElementById('setReservationReminderBtn').addEventListener('click', function() {
+            const settings = document.getElementById('reservationReminderSettings');
+            const isVisible = settings.style.display !== 'none';
+            
+            if (isVisible) {
+                // Save reminder
+                const time = document.getElementById('reservationReminderTime').value;
+                if (time) {
+                    const activeDetailSection = document.querySelector('.reservation-detail-section[style*="block"]');
+                    if (activeDetailSection) {
+                        const titleElement = activeDetailSection.querySelector('.reservation-detail-title-text');
+                        const reservationTitle = titleElement ? titleElement.textContent : 'Unknown Plan';
+                        setReservationStudyReminder(reservationTitle, time);
+                        settings.style.display = 'none';
+                    }
+                } else {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Missing Time',
+                        text: 'Please select a time for your reminder.',
+                        confirmButtonText: 'OK'
+                    });
+                }
+            } else {
+                // Show settings
+                settings.style.display = 'block';
+                this.textContent = 'Save Reminder';
+            }
+        });
+        
+        // View reservation progress button
+        document.getElementById('viewReservationProgressBtn').addEventListener('click', function() {
+            const details = document.getElementById('reservationProgressDetails');
+            const isVisible = details.style.display !== 'none';
+            
+            if (isVisible) {
+                details.style.display = 'none';
+                this.textContent = 'View Progress';
+            } else {
+                details.style.display = 'block';
+                this.textContent = 'Hide Progress';
+                
+                // Simulate some progress updates
+                const activeDetailSection = document.querySelector('.reservation-detail-section[style*="block"]');
+                if (activeDetailSection) {
+                    const titleElement = activeDetailSection.querySelector('.reservation-detail-title-text');
+                    const reservationTitle = titleElement ? titleElement.textContent : 'Unknown Plan';
+                    const progress = getReservationProgress(reservationTitle);
+                    
+                    // Add some random progress for demo
+                    if (Math.random() > 0.7) {
+                        progress.studyTime += Math.floor(Math.random() * 3) + 1;
+                        progress.lessonsCompleted = Math.min(progress.totalLessons, progress.lessonsCompleted + 1);
+                        progress.streak += Math.floor(Math.random() * 5) + 1;
+                        updateReservationProgress(reservationTitle, progress);
+                        
+                        // Update display
+                        document.getElementById('reservationStudyTime').textContent = `${progress.studyTime} hours`;
+                        document.getElementById('reservationLessonsCompleted').textContent = `${progress.lessonsCompleted}/${progress.totalLessons}`;
+                        document.getElementById('reservationStudyStreak').textContent = `${progress.streak} days`;
+                    }
+                }
+            }
+        });
+        
+        // Ask reservation question button
+        document.getElementById('askReservationQuestionBtn').addEventListener('click', function() {
+            const form = document.getElementById('reservationQuestionForm');
+            const isVisible = form.style.display !== 'none';
+            
+            if (isVisible) {
+                form.style.display = 'none';
+                this.textContent = 'Ask Question';
+            } else {
+                form.style.display = 'block';
+                this.textContent = 'Cancel';
+            }
+        });
+        
+        // Submit reservation question button
+        document.getElementById('submitReservationQuestionBtn').addEventListener('click', function() {
+            const question = document.getElementById('reservationQuestionText').value.trim();
+            if (question) {
+                const activeDetailSection = document.querySelector('.reservation-detail-section[style*="block"]');
+                if (activeDetailSection) {
+                    const titleElement = activeDetailSection.querySelector('.reservation-detail-title-text');
+                    const reservationTitle = titleElement ? titleElement.textContent : 'Unknown Plan';
+                    submitReservationQuestion(reservationTitle, question);
+                }
+            } else {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Missing Question',
+                    text: 'Please enter your question.',
+                    confirmButtonText: 'OK'
+                });
+            }
+        });
+        
+        // Course section event listeners
+        // Save overall goals button
+        document.getElementById('saveOverallGoalsBtn').addEventListener('click', function() {
+            saveOverallGoals();
+        });
+        
+        // Update course progress button
+        document.getElementById('updateCourseProgressBtn').addEventListener('click', function() {
+            updateCourseProgress();
+        });
+        
+        // Set course reminders button
+        document.getElementById('setCourseRemindersBtn').addEventListener('click', function() {
+            setCourseReminders();
+        });
+        
+        // Save analytics button
+        document.getElementById('saveAnalyticsBtn').addEventListener('click', function() {
+            saveAnalytics();
+        });
+        
+        // Course recommendation buttons
+        document.querySelectorAll('.rec-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const courseTitle = this.dataset.courseTitle;
+                const courseIcon = this.dataset.courseIcon;
+                startRecommendedCourse(courseTitle, courseIcon);
+            });
+        });
+    });
+
+    // Initialize
+    loadProfile();
+    loadDashboardGoals(); // Load saved goals to dashboard on page load
+    const initial = (location.hash || '#overview').replace('#','');
+    showSection(initial);
+    </script>
+</body>
+</html>
