@@ -103,23 +103,35 @@ app.use(cors({
 app.use(express.json());
 app.use(cookieParser());
 
-// Serve frontend
-app.use(express.static(path.join(__dirname, '../public')));
-app.get('/', (_req, res) => {
-  res.sendFile(path.join(__dirname, '../public/index.html'));
-});
-
-
-// API routes
+// API routes (should come BEFORE static files)
 app.use('/api/auth', authRoutes);
 app.use('/api/courses', courseRoutes);
 app.use('/api/trials', trialRoutes);
 app.use('/api/reservations', reservationRoutes);
 
+// Serve frontend static files
+const publicPath = path.join(__dirname, '../public');
+console.log('Serving static files from:', publicPath);
+app.use(express.static(publicPath));
+
+// Serve index.html for root route
+app.get('/', (req, res) => {
+  res.sendFile(path.join(publicPath, 'index.html'));
+});
+
 // Global error handler
 app.use((err, _req, res, _next) => {
   console.error(err);
   res.status(err.status || 500).json({ error: err.message || 'Internal Server Error' });
+});
+
+// Catch-all route for SPA (must be last, after error handler)
+app.get('*', (req, res) => {
+  // Don't serve HTML for API routes
+  if (req.path.startsWith('/api')) {
+    return res.status(404).json({ error: 'API route not found' });
+  }
+  res.sendFile(path.join(publicPath, 'index.html'));
 });
 
 connectToDatabase()
