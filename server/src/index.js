@@ -125,13 +125,19 @@ app.use((err, _req, res, _next) => {
   res.status(err.status || 500).json({ error: err.message || 'Internal Server Error' });
 });
 
-// Catch-all route for SPA (must be last, after error handler)
-app.get('*', (req, res) => {
+// Catch-all middleware for SPA (must be last, after error handler)
+// Express 5 doesn't support '*' directly, so we use a middleware function
+app.use((req, res, next) => {
   // Don't serve HTML for API routes
   if (req.path.startsWith('/api')) {
     return res.status(404).json({ error: 'API route not found' });
   }
-  res.sendFile(path.join(publicPath, 'index.html'));
+  // If it's not an API route and file wasn't found, serve index.html for SPA
+  res.sendFile(path.join(publicPath, 'index.html'), (err) => {
+    if (err) {
+      next(err);
+    }
+  });
 });
 
 connectToDatabase()
