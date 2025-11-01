@@ -76,7 +76,30 @@ const reservationRoutes = require('./routes/reservation');
 const app = express();
 const PORT = process.env.PORT || 4000;
 
-app.use(cors({ origin: true, credentials: true }));
+// CORS configuration - Allow all origins in production, or specify your frontend URL
+const allowedOrigins = [
+  'https://spellvoc.netlify.app',
+  'https://www.spellvoc.netlify.app',
+  'http://localhost:4000',
+  'http://localhost:5500',
+  'http://127.0.0.1:4000',
+  'http://127.0.0.1:5500'
+];
+
+app.use(cors({ 
+  origin: function(origin, callback) {
+    // Allow requests with no origin (mobile apps, Postman, etc.)
+    if (!origin) return callback(null, true);
+    
+    // Check if origin is in allowed list or allow all in development
+    if (allowedOrigins.includes(origin) || process.env.NODE_ENV !== 'production') {
+      return callback(null, true);
+    }
+    
+    callback(null, true); // Allow all for now - you can restrict this later
+  },
+  credentials: true 
+}));
 app.use(express.json());
 app.use(cookieParser());
 

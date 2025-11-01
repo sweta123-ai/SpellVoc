@@ -827,8 +827,29 @@ async function sendReservationToWebhook({ name, email, phone, planName, priceTex
     }
 }
 
-// API helper
-const API_BASE = 'http://localhost:4000';
+// API helper - Dynamic API base URL for development and production
+// ⚠️ IMPORTANT: 
+// Option 1: If frontend and backend are on same server (deployed together) → Keep BACKEND_URL as null
+// Option 2: If backend is separate → Set BACKEND_URL to your backend URL (e.g., 'https://spellvoc-backend.onrender.com')
+// See SIMPLE_DEPLOYMENT_GUIDE.md for instructions
+const BACKEND_URL = null; // Keep null if frontend+backend are together, or set backend URL if separate
+
+const API_BASE = (() => {
+    // If BACKEND_URL is explicitly set, use it (for production)
+    if (BACKEND_URL) {
+        return BACKEND_URL;
+    }
+    // Check if we're in development (localhost)
+    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+        return 'http://localhost:4000';
+    }
+    // In production without BACKEND_URL set - show helpful error
+    console.error('⚠️ BACKEND_URL not configured! Please set it in script.js after deploying your backend.');
+    console.error('📖 See BACKEND_DEPLOYMENT_GUIDE.md for instructions.');
+    // Still try same origin as fallback
+    return window.location.origin;
+})();
+
 async function apiFetch(path, { method = 'GET', body } = {}) {
     const opts = {
         method,
@@ -838,15 +859,28 @@ async function apiFetch(path, { method = 'GET', body } = {}) {
     if (body) opts.body = JSON.stringify(body);
     const url = `${API_BASE}${path}`;
     console.log('[API][REQUEST]', method, url, body || null);
-    const res = await fetch(url, opts);
-    let data = null;
-    try { data = await res.json(); } catch (_) { }
-    console.log('[API][RESPONSE]', method, url, res.status, data);
-    if (!res.ok) {
-        const msg = (data && (data.error || data.message)) || `HTTP ${res.status}`;
-        throw new Error(msg);
+    
+    try {
+        const res = await fetch(url, opts);
+        let data = null;
+        try { data = await res.json(); } catch (_) { }
+        console.log('[API][RESPONSE]', method, url, res.status, data);
+        
+        if (!res.ok) {
+            const msg = (data && (data.error || data.message)) || `HTTP ${res.status}`;
+            throw new Error(msg);
+        }
+        return data;
+    } catch (err) {
+        // If it's a network error and we're in production without BACKEND_URL, show helpful message
+        if (err.message.includes('Failed to fetch') || err.message.includes('NetworkError')) {
+            if (!BACKEND_URL && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+                console.error('❌ Cannot connect to backend. Please deploy your backend and set BACKEND_URL in script.js');
+                console.error('📖 See BACKEND_DEPLOYMENT_GUIDE.md for step-by-step instructions.');
+            }
+        }
+        throw err;
     }
-    return data;
 }
 
 // Hook pricing Buy Now buttons
@@ -1018,7 +1052,7 @@ if (loginForm) {
             try { await syncPendingSelections(); } catch(e) { console.warn('[SYNC][ERR]', e?.message); }
             // Notify via Web3Forms
             try { await sendAuthEventViaWeb3Forms({ type: 'login', name: out?.fullName, email: emailOrId }); } catch(_) {}
-            setTimeout(() => { window.location.href = 'http://localhost:4000/dashboard.html'; }, 300);
+            setTimeout(() => { window.location.href = `${API_BASE}/dashboard.html`; }, 300);
         } catch (err) {
             console.error('[LOGIN][ERR]', err);
             alert(`Login failed: ${err.message}`);
@@ -1074,7 +1108,7 @@ if (otpResetForm) {
             }
             // On success, backend set cookies. Redirect to dashboard
             authSlide?.classList.remove('active');
-            setTimeout(() => { window.location.href = 'http://localhost:4000/dashboard.html'; }, 300);
+            setTimeout(() => { window.location.href = `${API_BASE}/dashboard.html`; }, 300);
         } catch (err) {
             console.error('[RESET_PASSWORD_OTP][ERR]', err);
             alert(`Failed to reset: ${err.message}`);
