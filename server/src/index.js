@@ -112,11 +112,22 @@ app.use('/api/reservations', reservationRoutes);
 // Serve frontend static files
 const publicPath = path.join(__dirname, '../public');
 console.log('Serving static files from:', publicPath);
+console.log('__dirname is:', __dirname);
+console.log('Public path exists:', require('fs').existsSync(publicPath));
+
+// Serve static files
 app.use(express.static(publicPath));
 
 // Serve index.html for root route
 app.get('/', (req, res) => {
-  res.sendFile(path.join(publicPath, 'index.html'));
+  const indexPath = path.join(publicPath, 'index.html');
+  console.log('Serving index.html from:', indexPath);
+  res.sendFile(indexPath, (err) => {
+    if (err) {
+      console.error('Error serving index.html:', err);
+      res.status(500).send('Error loading page');
+    }
+  });
 });
 
 // Global error handler
@@ -140,11 +151,30 @@ app.use((req, res, next) => {
   });
 });
 
+// Start server even if DB connection fails (will retry in background)
 connectToDatabase()
   .then(() => {
-    app.listen(PORT, () => console.log(`API running on http://localhost:${PORT}`));
+    console.log('✅ MongoDB connected successfully');
+    startServer();
   })
   .catch((err) => {
-    console.error('Failed to start server:', err);
-    process.exit(1);
+    console.error('⚠️ MongoDB connection failed, but starting server anyway...');
+    console.error('⚠️ Database features will not work until connection is fixed.');
+    console.error('⚠️ Error:', err.message);
+    // Start server anyway so frontend can be served
+    startServer();
+    // Retry connection in background
+    setTimeout(() => {
+      console.log('🔄 Retrying MongoDB connection...');
+      connectToDatabase().catch(() => {
+        console.error('❌ MongoDB connection still failing. Check your MONGODB_URI in Render environment variables.');
+      });
+    }, 5000);
   });
+
+function startServer() {
+  app.listen(PORT, () => {
+    console.log(`✅ Server running on port ${PORT}`);
+    console.log(`✅ Frontend available at http://localhost:${PORT}`);
+  });
+}
