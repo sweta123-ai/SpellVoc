@@ -2,11 +2,11 @@
 
 ## 📊 Comparison Table
 
-| Platform | Free Tier | Reliability | Ease of Use | Best For |
-|----------|-----------|------------|-------------|----------|
-| **Koyeb** ⭐ | ✅ Always on | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ | **RECOMMENDED** |
-| **Glitch** | ✅ Always on | ⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | Quick setup |
-| **Replit** | ✅ Always on | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ | Learning/Dev |
+| Platform | Free Tier | No Credit Card | Reliability | Ease of Use | Best For |
+|----------|-----------|----------------|------------|-------------|----------|
+| **Glitch** ⭐ | ✅ Always on | ✅ **YES** | ⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | **RECOMMENDED** |
+| **Replit** | ✅ Always on | ✅ **YES** | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ | Alternative |
+| Koyeb | ✅ Always on | ❌ Requires card | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ | Skip (needs card) |
 | Render | ⚠️ Sleeps after 15min | ⭐⭐⭐ | ⭐⭐⭐ | You tried, had issues |
 | Railway | ⚠️ Limited free | ⭐⭐⭐ | ⭐⭐⭐ | You tried, had issues |
 | Fly.io | ✅ Free | ⭐⭐⭐ | ⭐⭐ | You tried, had issues |
@@ -15,63 +15,41 @@
 
 ---
 
-## 🏆 TOP RECOMMENDATION: Koyeb
-
-### Why Koyeb?
-
-✅ **100% FREE** - No credit card required  
-✅ **Always running** - No sleep, no cold starts  
-✅ **Perfect for full-stack** - Handles both frontend + backend  
-✅ **Simple deployment** - Connect GitHub, deploy  
-✅ **Reliable** - Doesn't shut down like Cyclic  
-✅ **Global CDN** - Fast worldwide  
-✅ **Free SSL** - HTTPS included  
-✅ **Custom domains** - Free tier supports it  
-
-### Quick Start:
-
-1. Go to **https://www.koyeb.com/**
-2. Sign up with GitHub
-3. Click "Create App" → Connect your GitHub repo
-4. Set Root Directory: `server`
-5. Build Command: `npm install`
-6. Run Command: `npm start`
-7. Add environment variables
-8. Deploy!
-
-**See `KOYEB_DEPLOYMENT_GUIDE.md` for detailed steps.**
-
----
-
-## 🥈 ALTERNATIVE: Glitch
+## 🏆 TOP RECOMMENDATION: Glitch (NO CREDIT CARD NEEDED!)
 
 ### Why Glitch?
 
-✅ **Super simple** - Import from GitHub, done  
-✅ **Always running** - No sleep  
-✅ **Live editing** - Edit code in browser  
-✅ **Great for Node.js** - Perfect for Express  
+✅ **100% FREE** - **NO credit card required!**  
+✅ **Always running** - No sleep, no cold starts  
+✅ **Super simple** - Import from GitHub, done!  
+✅ **Perfect for Node.js** - Great for Express apps  
+✅ **Live editing** - Edit code directly in browser  
+✅ **Reliable** - Doesn't shut down like Cyclic  
+✅ **Free SSL** - HTTPS included automatically  
 
 ### Quick Start:
 
 1. Go to **https://glitch.com/**
-2. Sign in with GitHub
-3. "New Project" → "Import from GitHub"
-4. Add environment variables in `.env`
-5. Click "Show" to see live app
+2. Sign in with **GitHub** (no credit card!)
+3. Click **"New Project"** → **"Import from GitHub"**
+4. Enter your repo URL
+5. Add environment variables in `.env` file
+6. Update `package.json` (see guide)
+7. Click **"Show"** to see live app!
 
 **See `GLITCH_DEPLOYMENT_GUIDE.md` for detailed steps.**
 
 ---
 
-## 🥉 ALTERNATIVE: Replit
+## 🥈 ALTERNATIVE: Replit (NO CREDIT CARD NEEDED!)
 
 ### Why Replit?
 
+✅ **100% FREE** - **NO credit card required!**  
 ✅ **Always running** - No sleep  
 ✅ **Built-in editor** - Code in browser  
 ✅ **Terminal access** - Full control  
-✅ **Free tier** - No credit card  
+✅ **Great for learning** - Full development environment  
 
 ### Quick Start:
 
@@ -115,9 +93,11 @@
 
 ## 🎯 My Recommendation
 
-**Start with Koyeb** - It's the most reliable and easiest for your use case.
+**Start with Glitch** - It's FREE, simple, and **NO CREDIT CARD needed!**
 
-If Koyeb doesn't work, try **Glitch** (simplest) or **Replit** (most control).
+If Glitch doesn't work, try **Replit** (also no credit card, more control).
+
+**Skip Koyeb** - It requires credit card details.
 
 ---
 
@@ -143,9 +123,9 @@ This works perfectly on Koyeb, Glitch, and Replit!
 
 ## 🚀 Next Steps
 
-1. **Read `KOYEB_DEPLOYMENT_GUIDE.md`** (recommended)
-2. **Or read `GLITCH_DEPLOYMENT_GUIDE.md`** (simpler)
-3. **Or read `REPLIT_DEPLOYMENT_GUIDE.md`** (more control)
+1. **Read `GLITCH_DEPLOYMENT_GUIDE.md`** ⭐ **START HERE** (no credit card!)
+2. **Or read `REPLIT_DEPLOYMENT_GUIDE.md`** (also no credit card, more control)
+3. **Skip Koyeb** - Requires credit card
 
-All three are **FREE** and **RELIABLE**! 🎉
+Both Glitch and Replit are **FREE**, **RELIABLE**, and **NO CREDIT CARD**! 🎉
 

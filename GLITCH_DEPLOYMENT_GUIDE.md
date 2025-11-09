@@ -51,21 +51,34 @@ PORT=4000
 
 ---
 
-### Step 4: Update package.json for Glitch
+### Step 4: Create Root package.json for Glitch
 
-Glitch looks for `package.json` in the root. You have two options:
+**Important:** Glitch needs a `package.json` in the root directory.
 
-**Option A: Move server files to root (Recommended)**
+1. In Glitch editor, click **"New File"** (top left)
+2. Name it: `package.json`
+3. Copy and paste this content:
 
-1. In Glitch, create a new file called `package.json` in root
-2. Copy contents from `server/package.json`
-3. Update `start` script to: `"start": "node server/src/index.js"`
+```json
+{
+  "name": "spellvoc",
+  "version": "1.0.0",
+  "scripts": {
+    "start": "cd server && npm install && node src/index.js"
+  }
+}
+```
 
-**Option B: Use server folder structure**
+4. Click **"Save"** (Ctrl+S or Cmd+S)
 
-1. Click **"Tools"** → **"Terminal"**
+**What this does:**
+- Glitch will automatically install dependencies from `server/package.json`
+- Then runs your app from `server/src/index.js`
+
+**Alternative (if above doesn't work):**
+1. Click **"Tools"** → **"Terminal"** (bottom left)
 2. Run: `cd server && npm install`
-3. Update root `package.json` start script: `"start": "cd server && node src/index.js"`
+3. Then update root `package.json` start script to just: `"start": "cd server && node src/index.js"`
 
 ---
 

@@ -173,8 +173,14 @@ connectToDatabase()
   });
 
 function startServer() {
-  app.listen(PORT, () => {
-    console.log(`✅ Server running on port ${PORT}`);
-    console.log(`✅ Frontend available at http://localhost:${PORT}`);
+  const serverPort = PORT || 4000;
+  app.listen(serverPort, '0.0.0.0', () => {
+    console.log(`✅ Server running on port ${serverPort}`);
+    console.log(`✅ Frontend available at http://localhost:${serverPort}`);
+    console.log(`✅ Server listening on 0.0.0.0:${serverPort} (accessible from Replit webview)`);
   });
 }
+
+// Export app for Vercel serverless functions
+// This allows the app to work both as a traditional server and as a serverless function
+module.exports = app;
