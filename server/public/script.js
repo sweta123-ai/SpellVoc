@@ -11,7 +11,28 @@ const navMenu = document.querySelector('.nav-menu');
 
 // Authentication Slide Toggle
 userIcon.addEventListener('click', () => {
+    // Close hamburger menu if open
+    hamburger.classList.remove('active');
+    navMenu.classList.remove('active');
+    
+    // Toggle auth slide
     authSlide.classList.toggle('active');
+    
+    // Always show login form by default when opening auth slide
+    if (authSlide.classList.contains('active')) {
+        // Hide all forms
+        document.querySelectorAll('.auth-form').forEach(form => {
+            form.classList.remove('active');
+        });
+        // Remove active from all tabs
+        authTabs.forEach(tab => tab.classList.remove('active'));
+        // Show login form and activate login tab
+        const loginTab = document.querySelector('[data-form="login"]');
+        if (loginTab) {
+            loginTab.classList.add('active');
+        }
+        loginForm.classList.add('active');
+    }
 });
 
 // Close auth slide when clicking outside
@@ -80,6 +101,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Mobile Menu Toggle
 hamburger.addEventListener('click', () => {
+    // Close auth slide if open
+    authSlide.classList.remove('active');
+    
+    // Toggle hamburger menu
     hamburger.classList.toggle('active');
     navMenu.classList.toggle('active');
 });

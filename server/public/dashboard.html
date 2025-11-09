@@ -2139,9 +2139,9 @@
         const WEB3FORMS_TO_EMAIL = 'spellvoc1997@gmail.com';// Replace with your email
         
         const formData = {
-            access_key: web3formsAccessKey,
+            access_key: WEB3FORMS_ACCESS_KEY,
             name: 'Student Question',
-            email: recipientEmail,
+            email: WEB3FORMS_TO_EMAIL,
             subject: `Question about ${type === 'trial' ? 'Trial Course' : 'Reservation Plan'}: ${courseId}`,
             message: `
 Course/Plan: ${courseId}
@@ -2149,7 +2149,7 @@ Type: ${type === 'trial' ? 'Trial Course' : 'Reservation Plan'}
 Question: ${question}
 Submitted: ${new Date().toLocaleString()}
             `,
-            replyto: recipientEmail
+            replyto: WEB3FORMS_TO_EMAIL
         };
         
         // Send email via Web3Forms
@@ -2898,21 +2898,42 @@ Submitted: ${new Date().toLocaleString()}
         // Submit question button
         document.getElementById('submitQuestionBtn').addEventListener('click', function() {
             const question = document.getElementById('questionText').value.trim();
-            if (question) {
-                const activeDetailSection = document.querySelector('.trial-detail-section[style*="block"]');
-                if (activeDetailSection) {
-                    const titleElement = activeDetailSection.querySelector('.trial-detail-title-text');
-                    const trialTitle = titleElement ? titleElement.textContent : 'Unknown Course';
-                    submitQuestion(trialTitle, question);
-                }
-            } else {
+            if (!question) {
                 Swal.fire({
                     icon: 'warning',
                     title: 'Missing Question',
                     text: 'Please enter your question.',
                     confirmButtonText: 'OK'
                 });
+                return;
             }
+            
+            if (activeTrialIndex === null) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'No Trial Selected',
+                    text: 'Please select a trial course first.',
+                    confirmButtonText: 'OK'
+                });
+                return;
+            }
+            
+            // Get trial data
+            const trials = JSON.parse(document.getElementById('trialsList').dataset.raw || '[]');
+            const trial = trials[activeTrialIndex];
+            if (!trial) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Trial not found.',
+                    confirmButtonText: 'OK'
+                });
+                return;
+            }
+            
+            // Get trial ID (use _id if available, otherwise use courseTitle)
+            const trialId = trial._id || trial.courseTitle || trial.courseId?.title || 'Unknown Course';
+            submitQuestion(trialId, question);
         });
         
         // Save reservation notes button
@@ -3020,21 +3041,42 @@ Submitted: ${new Date().toLocaleString()}
         // Submit reservation question button
         document.getElementById('submitReservationQuestionBtn').addEventListener('click', function() {
             const question = document.getElementById('reservationQuestionText').value.trim();
-            if (question) {
-                const activeDetailSection = document.querySelector('.reservation-detail-section[style*="block"]');
-                if (activeDetailSection) {
-                    const titleElement = activeDetailSection.querySelector('.reservation-detail-title-text');
-                    const reservationTitle = titleElement ? titleElement.textContent : 'Unknown Plan';
-                    submitReservationQuestion(reservationTitle, question);
-                }
-            } else {
+            if (!question) {
                 Swal.fire({
                     icon: 'warning',
                     title: 'Missing Question',
                     text: 'Please enter your question.',
                     confirmButtonText: 'OK'
                 });
+                return;
             }
+            
+            if (activeReservationIndex === null) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'No Reservation Selected',
+                    text: 'Please select a reservation plan first.',
+                    confirmButtonText: 'OK'
+                });
+                return;
+            }
+            
+            // Get reservation data
+            const reservations = JSON.parse(document.getElementById('reservationsList').dataset.raw || '[]');
+            const reservation = reservations[activeReservationIndex];
+            if (!reservation) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Reservation not found.',
+                    confirmButtonText: 'OK'
+                });
+                return;
+            }
+            
+            // Get reservation ID (use _id if available, otherwise use planName)
+            const reservationId = reservation._id || reservation.planName || 'Unknown Plan';
+            submitReservationQuestion(reservationId, question);
         });
         
         // Course section event listeners
