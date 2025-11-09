@@ -151,26 +151,48 @@ app.use((req, res, next) => {
   });
 });
 
-// Start server even if DB connection fails (will retry in background)
-connectToDatabase()
-  .then(() => {
-    console.log('✅ MongoDB connected successfully');
-    startServer();
-  })
-  .catch((err) => {
-    console.error('⚠️ MongoDB connection failed, but starting server anyway...');
-    console.error('⚠️ Database features will not work until connection is fixed.');
-    console.error('⚠️ Error:', err.message);
-    // Start server anyway so frontend can be served
-    startServer();
-    // Retry connection in background
-    setTimeout(() => {
-      console.log('🔄 Retrying MongoDB connection...');
-      connectToDatabase().catch(() => {
-        console.error('❌ MongoDB connection still failing. Check your MONGODB_URI in Render environment variables.');
-      });
-    }, 5000);
-  });
+// Check if running on Vercel (serverless) or traditional server
+const isVercel = process.env.VERCEL === '1' || process.env.VERCEL_ENV;
+
+// Start server only if NOT on Vercel (Vercel uses serverless functions)
+if (!isVercel) {
+  // Start server even if DB connection fails (will retry in background)
+  connectToDatabase()
+    .then(() => {
+      console.log('✅ MongoDB connected successfully');
+      startServer();
+    })
+    .catch((err) => {
+      console.error('⚠️ MongoDB connection failed, but starting server anyway...');
+      console.error('⚠️ Database features will not work until connection is fixed.');
+      console.error('⚠️ Error:', err.message);
+      // Start server anyway so frontend can be served
+      startServer();
+      // Retry connection in background
+      setTimeout(() => {
+        console.log('🔄 Retrying MongoDB connection...');
+        connectToDatabase().catch(() => {
+          console.error('❌ MongoDB connection still failing. Check your MONGODB_URI in environment variables.');
+        });
+      }, 5000);
+    });
+} else {
+  // On Vercel, just connect to database (serverless function will handle requests)
+  connectToDatabase()
+    .then(() => {
+      console.log('✅ MongoDB connected successfully (Vercel serverless)');
+    })
+    .catch((err) => {
+      console.error('⚠️ MongoDB connection failed on Vercel:', err.message);
+      // Don't exit - let the function handle requests and retry
+      setTimeout(() => {
+        console.log('🔄 Retrying MongoDB connection...');
+        connectToDatabase().catch(() => {
+          console.error('❌ MongoDB connection still failing.');
+        });
+      }, 5000);
+    });
+}
 
 function startServer() {
   const serverPort = PORT || 4000;
