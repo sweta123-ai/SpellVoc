@@ -7,6 +7,7 @@ const User = require('../models/User');
 const auth = require('../middleware/auth');
 const { signAccessToken, signRefreshToken, setAuthCookies, clearAuthCookies } = require('../utils/tokens');
 const { sendPasswordResetEmail, sendPasswordResetOtpEmail } = require('../utils/emailService');
+const { ensureConnection } = require('../config/db');
 
 const registerSchema = Joi.object({
   fullName: Joi.string().min(2).max(100).required(),
@@ -17,6 +18,12 @@ const registerSchema = Joi.object({
 
 router.post('/register', async (req, res, next) => {
   try {
+    // Ensure database connection is ready before operations
+    const isConnected = await ensureConnection();
+    if (!isConnected) {
+      return res.status(503).json({ error: 'Database connection unavailable. Please try again.' });
+    }
+
     const { value, error } = registerSchema.validate(req.body);
     if (error) return res.status(400).json({ error: error.message });
 
@@ -38,6 +45,12 @@ const loginSchema = Joi.object({ email: Joi.string().email().required(), passwor
 
 router.post('/login', async (req, res, next) => {
   try {
+    // Ensure database connection is ready before operations
+    const isConnected = await ensureConnection();
+    if (!isConnected) {
+      return res.status(503).json({ error: 'Database connection unavailable. Please try again.' });
+    }
+
     const { value, error } = loginSchema.validate(req.body);
     if (error) return res.status(400).json({ error: error.message });
 
@@ -57,6 +70,12 @@ router.post('/login', async (req, res, next) => {
 
 router.get('/me', auth, async (req, res, next) => {
   try {
+    // Ensure database connection is ready before operations
+    const isConnected = await ensureConnection();
+    if (!isConnected) {
+      return res.status(503).json({ error: 'Database connection unavailable. Please try again.' });
+    }
+
     const user = await User.findById(req.user.id).select('fullName email phone role createdAt');
     res.json(user);
   } catch (err) { next(err); }
@@ -66,6 +85,12 @@ router.post('/refresh', async (req, res) => {
   const token = req.cookies?.refreshToken;
   if (!token) return res.status(401).json({ error: 'Unauthorized' });
   try {
+    // Ensure database connection is ready before operations
+    const isConnected = await ensureConnection();
+    if (!isConnected) {
+      return res.status(503).json({ error: 'Database connection unavailable. Please try again.' });
+    }
+
     const payload = jwt.verify(token, process.env.JWT_REFRESH_SECRET);
     const user = await User.findById(payload.sub);
     if (!user) return res.status(401).json({ error: 'Unauthorized' });
@@ -86,6 +111,12 @@ router.post('/logout', (req, res) => {
 // Forgot Password
 router.post('/forgot-password', async (req, res, next) => {
   try {
+    // Ensure database connection is ready before operations
+    const isConnected = await ensureConnection();
+    if (!isConnected) {
+      return res.status(503).json({ error: 'Database connection unavailable. Please try again.' });
+    }
+
     const { email } = req.body;
     if (!email) return res.status(400).json({ error: 'Email is required' });
 
@@ -118,6 +149,12 @@ router.post('/forgot-password', async (req, res, next) => {
 // Forgot Password via OTP (generate and email OTP)
 router.post('/forgot-password-otp', async (req, res, next) => {
   try {
+    // Ensure database connection is ready before operations
+    const isConnected = await ensureConnection();
+    if (!isConnected) {
+      return res.status(503).json({ error: 'Database connection unavailable. Please try again.' });
+    }
+
     const { email } = req.body;
     if (!email) return res.status(400).json({ error: 'Email is required' });
 
@@ -156,6 +193,12 @@ router.post('/forgot-password-otp', async (req, res, next) => {
 // Verify OTP and reset password
 router.post('/reset-password-otp', async (req, res, next) => {
   try {
+    // Ensure database connection is ready before operations
+    const isConnected = await ensureConnection();
+    if (!isConnected) {
+      return res.status(503).json({ error: 'Database connection unavailable. Please try again.' });
+    }
+
     const { email, otp, newPassword } = req.body;
     if (!email || !otp || !newPassword) {
       return res.status(400).json({ error: 'Email, OTP and new password are required' });
@@ -181,6 +224,12 @@ router.post('/reset-password-otp', async (req, res, next) => {
 // Reset Password
 router.post('/reset-password', async (req, res, next) => {
   try {
+    // Ensure database connection is ready before operations
+    const isConnected = await ensureConnection();
+    if (!isConnected) {
+      return res.status(503).json({ error: 'Database connection unavailable. Please try again.' });
+    }
+
     const { token, newPassword } = req.body;
     if (!token || !newPassword) {
       return res.status(400).json({ error: 'Token and new password are required' });

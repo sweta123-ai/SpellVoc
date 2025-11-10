@@ -1,6 +1,7 @@
 ﻿const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
+const { ensureConnection } = require('../config/db');
 
 const ACCESS_TTL = process.env.ACCESS_TOKEN_TTL || '15m';
 const REFRESH_TTL = process.env.REFRESH_TOKEN_TTL || '7d';
@@ -14,6 +15,12 @@ function signRefresh(user) {
 
 exports.register = async (req, res, next) => {
   try {
+    // Ensure database connection is ready before operations
+    const isConnected = await ensureConnection();
+    if (!isConnected) {
+      return res.status(503).json({ error: 'Database connection unavailable. Please try again.' });
+    }
+
     const { fullName, phone, email, mode, category, password, message } = req.body;
     if (!fullName || !phone || !email || !mode || !category || !password) {
       return res.status(400).json({ error: 'Missing required fields' });
@@ -35,6 +42,12 @@ exports.register = async (req, res, next) => {
 
 exports.login = async (req, res, next) => {
   try {
+    // Ensure database connection is ready before operations
+    const isConnected = await ensureConnection();
+    if (!isConnected) {
+      return res.status(503).json({ error: 'Database connection unavailable. Please try again.' });
+    }
+
     const { userId, password } = req.body; // userId can be email or phone
     if (!userId || !password) return res.status(400).json({ error: 'userId and password required' });
 
@@ -54,6 +67,12 @@ exports.login = async (req, res, next) => {
 
 exports.refresh = async (req, res, next) => {
   try {
+    // Ensure database connection is ready before operations
+    const isConnected = await ensureConnection();
+    if (!isConnected) {
+      return res.status(503).json({ error: 'Database connection unavailable. Please try again.' });
+    }
+
     const token = req.cookies.refreshToken;
     if (!token) return res.status(401).json({ error: 'no refresh token' });
 

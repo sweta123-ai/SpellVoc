@@ -2,12 +2,19 @@
 const Joi = require('joi');
 const auth = require('../middleware/auth');
 const Trial = require('../models/Trial');
+const { ensureConnection } = require('../config/db');
 
 const trialSchema = Joi.object({ courseId: Joi.string().optional(), courseTitle: Joi.string().optional() })
   .or('courseId', 'courseTitle');
 
 router.post('/', auth, async (req, res, next) => {
   try {
+    // Ensure database connection is ready before operations
+    const isConnected = await ensureConnection();
+    if (!isConnected) {
+      return res.status(503).json({ error: 'Database connection unavailable. Please try again.' });
+    }
+
     const { value, error } = trialSchema.validate(req.body);
     if (error) return res.status(400).json({ error: error.message });
     console.log('[TRIAL][CREATE] user', req.user.id, 'payload', value);
@@ -20,6 +27,12 @@ router.post('/', auth, async (req, res, next) => {
 
 router.get('/me', auth, async (req, res, next) => {
   try {
+    // Ensure database connection is ready before operations
+    const isConnected = await ensureConnection();
+    if (!isConnected) {
+      return res.status(503).json({ error: 'Database connection unavailable. Please try again.' });
+    }
+
     const trials = await Trial.find({ userId: req.user.id }).populate('courseId', 'title');
     res.json(trials);
   } catch (err) { next(err); }

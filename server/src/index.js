@@ -177,20 +177,15 @@ if (!isVercel) {
       }, 5000);
     });
 } else {
-  // On Vercel, just connect to database (serverless function will handle requests)
+  // On Vercel, attempt to connect but don't block (connection will be ensured per-request)
+  // This helps with connection reuse in serverless environments
   connectToDatabase()
     .then(() => {
       console.log('✅ MongoDB connected successfully (Vercel serverless)');
     })
     .catch((err) => {
-      console.error('⚠️ MongoDB connection failed on Vercel:', err.message);
-      // Don't exit - let the function handle requests and retry
-      setTimeout(() => {
-        console.log('🔄 Retrying MongoDB connection...');
-        connectToDatabase().catch(() => {
-          console.error('❌ MongoDB connection still failing.');
-        });
-      }, 5000);
+      console.error('⚠️ Initial MongoDB connection failed on Vercel (will retry per-request):', err.message);
+      // Don't exit - connection will be ensured per-request via ensureConnection()
     });
 }
 

@@ -2,6 +2,7 @@ const router = require('express').Router();
 const Joi = require('joi');
 const auth = require('../middleware/auth');
 const Reservation = require('../models/Reservation');
+const { ensureConnection } = require('../config/db');
 
 const reservationSchema = Joi.object({
   planName: Joi.string().required(),
@@ -11,6 +12,12 @@ const reservationSchema = Joi.object({
 
 router.post('/', auth, async (req, res, next) => {
   try {
+    // Ensure database connection is ready before operations
+    const isConnected = await ensureConnection();
+    if (!isConnected) {
+      return res.status(503).json({ error: 'Database connection unavailable. Please try again.' });
+    }
+
     const { value, error } = reservationSchema.validate(req.body);
     if (error) return res.status(400).json({ error: error.message });
     const reservation = await Reservation.create({
@@ -25,6 +32,12 @@ router.post('/', auth, async (req, res, next) => {
 
 router.get('/me', auth, async (req, res, next) => {
   try {
+    // Ensure database connection is ready before operations
+    const isConnected = await ensureConnection();
+    if (!isConnected) {
+      return res.status(503).json({ error: 'Database connection unavailable. Please try again.' });
+    }
+
     const reservations = await Reservation.find({ userId: req.user.id }).sort({ createdAt: -1 });
     res.json(reservations);
   } catch (err) { next(err); }
