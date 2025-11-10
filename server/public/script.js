@@ -1315,6 +1315,7 @@ async function syncPendingSelections() {
                         const startDate = document.getElementById('buyerStartDate')?.value || '';
                         const planName = planNameEl?.value || 'Selected Plan';
                         if (!name || !email || !phone || !startDate) { alert('Please fill all fields.'); return; }
+                        // 1) Try to create reservation on backend (like register/login)
                         try {
                             const out = await apiFetch('/api/reservations', { method: 'POST', body: { planName, startDate, priceText } });
                             console.log('[RESERVATION][OK]', out);
@@ -1322,7 +1323,31 @@ async function syncPendingSelections() {
                             console.warn('[RESERVATION][ERR] Stored locally to sync after login.', err.message);
                             addPendingReservation({ planName, startDate, priceText });
                         }
-                        // continue existing success UI which is already implemented below
+                        // 2) Notify via Web3Forms (mirror register/login notify flow)
+                        let delivered = false;
+                        try {
+                            const web3Res = await sendReservationViaWeb3Forms({ name, email, phone, planName, priceText, startDate });
+                            delivered = !!web3Res?.sent;
+                        } catch (e) {
+                            delivered = false;
+                        }
+                        // 3) Fallback to webhook if configured
+                        if (!delivered) {
+                            try {
+                                const webhookResult = await sendReservationToWebhook({ name, email, phone, planName, priceText, startDate });
+                                delivered = !!webhookResult?.sent;
+                            } catch (_) {}
+                        }
+                        // 4) Optional heads-up if email could not be delivered
+                        if (!delivered && window.Swal) {
+                            Swal.fire({
+                                icon: 'warning',
+                                title: 'Note',
+                                text: 'Reservation saved. Notification email could not be sent automatically. Configure Web3Forms or add a webhook URL.',
+                                confirmButtonColor: '#667eea'
+                            });
+                        }
+                        // 5) Continue existing success UI
                         if (window.Swal) {
                             Swal.fire({
                                 icon: 'success',
